@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/14 18:34:00 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/16 09:11:49 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ int	ft_atoi(const char *str)
 	while (str[i] >= '0' && str[i] <= '9')
 	{
 		if (res > (INT_MAX - (str[i] - '0')) / 10)
-			return (ERROR);
+			return (-1);
 		res = res * 10 + str[i] - '0';
 		i++;
 	}

@@ -6,14 +6,14 @@
 #    By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/18 15:06:10 by vsanin            #+#    #+#              #
-#    Updated: 2025/01/14 18:09:21 by vsanin           ###   ########.fr        #
+#    Updated: 2025/01/16 09:25:02 by vsanin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = philo
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -pthread
 RM = rm -f
 
 HEADER = philosophers.h
