@@ -6,7 +6,7 @@
 #    By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/18 15:06:10 by vsanin            #+#    #+#              #
-#    Updated: 2025/01/16 09:25:02 by vsanin           ###   ########.fr        #
+#    Updated: 2025/01/16 17:35:42 by vsanin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,8 +19,9 @@ RM = rm -f
 HEADER = philosophers.h
 
 SRC = 	main.c \
-		check_args.c \
+		checks.c \
 		utils.c \
+		inits.c \
 
 OBJ = $(SRC:.c=.o)
 

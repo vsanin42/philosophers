@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/16 13:16:32 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/16 17:37:05 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # define SUCCESS 0
 # define ERROR 1
+# define _GNU_SOURCE
 
 # include <unistd.h>
 # include <stdio.h>
@@ -35,11 +36,12 @@ typedef struct s_params
 
 typedef struct s_philo
 {
+	int				id;
 	pthread_t		thread;
 	t_params		*params;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
-}		t_philo;
+}					t_philo;
 
 /* utils.c */
 void	error_msg(char *msg);
@@ -47,9 +49,19 @@ int		ft_isdigit(int c);
 int		ft_strlen(char const *str);
 int		ft_atoi(const char *str);
 
-/* check_args.c */
+/* inits.c */
+int		alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params);
+int		init_params(t_params *params, char **argv);
+int		init_p_f(t_philo *philos, pthread_mutex_t *forks, t_params *params);
+
+/* checks.c */
 int		check_first(char *arg);
 int		check_arg(char *arg);
 int		check_args(int argc, char **argv);
+
+/* main.c */
+void	*routine(void *arg);
+void	destroy_forks(pthread_mutex_t *forks, int fork_count, int stop_index);
+int		join_threads(t_philo *philos);
 
 #endif
