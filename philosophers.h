@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/16 17:37:05 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/20 22:58:29 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include <sys/time.h>
 # include <pthread.h>
 # include <limits.h>
+//# include <stdbool.h>
 
 typedef struct s_params
 {
@@ -31,7 +32,8 @@ typedef struct s_params
 	int	tt_die;
 	int	tt_eat;
 	int	tt_sleep;
-	int	eat_count;
+	int	must_eat_count;
+	int	dead_status;
 }		t_params;
 
 typedef struct s_philo
@@ -41,6 +43,8 @@ typedef struct s_philo
 	t_params		*params;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
+	int				*dead;
+	int				times_eaten;
 }					t_philo;
 
 /* utils.c */
@@ -52,12 +56,17 @@ int		ft_atoi(const char *str);
 /* inits.c */
 int		alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params);
 int		init_params(t_params *params, char **argv);
+void	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl);
+int		init_forks(t_params *params, pthread_mutex_t *forks);
 int		init_p_f(t_philo *philos, pthread_mutex_t *forks, t_params *params);
 
 /* checks.c */
 int		check_first(char *arg);
 int		check_arg(char *arg);
 int		check_args(int argc, char **argv);
+
+/* time.c */
+
 
 /* main.c */
 void	*routine(void *arg);

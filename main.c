@@ -6,24 +6,30 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/16 17:31:03 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/20 19:43:58 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
-
-pthread_mutex_t	test;
 
 void	*routine(void *arg)
 {
 	t_philo	*philo;
 
 	philo = (t_philo *)arg;
-	//todo
-	pthread_mutex_lock(&test);
-	printf("Philosopher #%d: Hello!\n", philo->id);
-	usleep(1000000);
-	pthread_mutex_unlock(&test);
+	while (1)
+	{
+		if (*philo->dead)
+		{
+			// printf("%d %d died\n", get_elapsed_time(), philo->id); PRINT IN A DIFFERENT SPOT
+			break ;
+		}
+		if (philo->times_eaten == philo->params->must_eat_count) // 5th param exists and equals how many times a philo ate
+		{
+			break ; // exit loop if philo ate required number of times
+		}
+		printf("%d %d is thinking\n", get_elapsed_time(), philo->id);
+	}
 	return (NULL);
 }
 
@@ -63,17 +69,14 @@ int	main(int argc, char **argv)
 	t_philo			*philos;
 	pthread_mutex_t	*forks;
 
-	pthread_mutex_init(&test, NULL);
 	if (check_args(argc, argv) == ERROR || init_params(&params, argv) == ERROR)
 		return (ERROR);
 	if (alloc_p_f(&philos, &forks, &params) == ERROR)
 		return (ERROR);
 	if (init_p_f(philos, forks, &params) == ERROR)
 		return (free(philos), free(forks), ERROR);
-	//usleep(6000000);
 	if (join_threads(philos) == ERROR)
 		return (free(philos), free(forks), ERROR);
-	pthread_mutex_destroy(&test);
 	destroy_forks(forks, params.philos_count, -1);
 	free(philos);
 	free(forks);
