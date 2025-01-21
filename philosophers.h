@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/20 22:58:29 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/21 20:10:07 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,18 +28,24 @@
 
 typedef struct s_params
 {
-	int	philos_count;
-	int	tt_die;
-	int	tt_eat;
-	int	tt_sleep;
-	int	must_eat_count;
-	int	dead_status;
+	int				philos_count;
+	int				tt_die;
+	int				tt_eat;
+	int				tt_sleep;
+	int				must_eat_count;
+	int				dead_status;
+	pthread_mutex_t	printf_lock;
 }		t_params;
 
 typedef struct s_philo
 {
 	int				id;
 	pthread_t		thread;
+	int				philos_count;
+	int				tt_die;
+	int				tt_eat;
+	int				tt_sleep;
+	int				must_eat_count;
 	t_params		*params;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
@@ -66,11 +72,13 @@ int		check_arg(char *arg);
 int		check_args(int argc, char **argv);
 
 /* time.c */
-
+long	get_timestamp(struct timeval start);
+int		susleep(long usec);
 
 /* main.c */
+int		routine_conditions(t_philo *philo);
 void	*routine(void *arg);
-void	destroy_forks(pthread_mutex_t *forks, int fork_count, int stop_index);
+void	destroy_forks(pthread_mutex_t *forks, t_params *params, int stop_index);
 int		join_threads(t_philo *philos);
 
 #endif
