@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/21 20:17:17 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/21 20:48:04 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,12 +38,11 @@ void	*routine(void *arg)
 		// if (routine_conditions(philo) == ERROR)
 		// 	break ;
 	int i = 0;
-	(void)philo;
 	while (i < 100)
 	{	
-		pthread_mutex_lock(&philo->params->printf_lock);
+		//pthread_mutex_lock(&philo->params->printf_lock);
 		printf("%ld \t%d is thinking\n", get_timestamp(start), philo->id);
-		pthread_mutex_unlock(&philo->params->printf_lock);
+		//pthread_mutex_unlock(&philo->params->printf_lock);
 		//susleep(1000000);
 		susleep(philo->tt_die);
 		i++;

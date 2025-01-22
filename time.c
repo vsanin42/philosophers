@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 22:56:46 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/21 20:17:48 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/22 10:26:06 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,26 +24,48 @@ long	get_current_time(void)
 long	get_timestamp(struct timeval start)
 {
 	struct timeval	current;
-	long			start_val;
-	long			current_val;
+	// long			start_val;
+	// long			current_val;
 
 	gettimeofday(&current, NULL);
-	start_val = (start.tv_sec * 1000) + (start.tv_usec / 1000);
-	current_val = (current.tv_sec * 1000) + (current.tv_usec / 1000);
-	return (current_val - start_val);
+	// start_val = (start.tv_sec * 1000) + (start.tv_usec / 1000);
+	// current_val = (current.tv_sec * 1000) + (current.tv_usec / 1000);
+	return (((current.tv_sec - start.tv_sec) * 1000)
+		+ ((current.tv_usec - start.tv_usec) / 1000));
 }
 
 int	susleep(long usec)
 {
-	long			start;
+	long	start;
+	long	elapsed;
 
 	start = get_current_time();
-	while ((get_current_time() - start) < usec)
+	while (1)
 	{
-		usleep(100);
+		elapsed = get_current_time() - start;
+		if (elapsed >= usec)
+			break;
+		// Sleep in small chunks to reduce CPU usage but maintain precision
+		if (usec - elapsed > 1000)
+			usleep(1000); // Sleep for up to 500 microseconds
+		else
+			usleep(100);  // Sleep in very small increments toward the end
 	}
 	return (0);
 }
+
+// int	susleep(long usec)
+// {
+// 	long			start;
+
+// 	start = get_current_time();
+// 	while ((get_current_time() - start) < usec)
+// 	{
+// 		continue ;
+// 		// usleep(1);
+// 	}
+// 	return (0);
+// }
 
 // !!! test usleep times using oceano main on school pc
 // possibly more than 1000 usec threshold is needed
