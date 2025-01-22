@@ -6,50 +6,11 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/21 20:48:04 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/22 21:54:42 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
-
-int	routine_conditions(t_philo *philo)
-{
-	if (*philo->dead)
-	{
-		// printf("%d %d died\n", get_timestamp(), philo->id); PRINT IN A DIFFERENT SPOT
-		return (ERROR);
-	}
-	if (philo->times_eaten == philo->params->must_eat_count) // 5th param exists and equals how many times a philo ate
-	{
-		return (ERROR); // exit loop if philo ate required number of times
-	}
-	return (0);	
-}
-
-void	*routine(void *arg)
-{
-	t_philo			*philo;
-	struct timeval	start;
-
-	philo = (t_philo *)arg;
-	gettimeofday(&start, NULL);
-	// while (1)
-	// {
-		// if (routine_conditions(philo) == ERROR)
-		// 	break ;
-	int i = 0;
-	while (i < 100)
-	{	
-		//pthread_mutex_lock(&philo->params->printf_lock);
-		printf("%ld \t%d is thinking\n", get_timestamp(start), philo->id);
-		//pthread_mutex_unlock(&philo->params->printf_lock);
-		//susleep(1000000);
-		susleep(philo->tt_die);
-		i++;
-	}
-	// }
-	return (NULL);
-}
 
 void	destroy_forks(pthread_mutex_t *forks, t_params *params, int stop_index)
 {
@@ -68,6 +29,7 @@ void	destroy_forks(pthread_mutex_t *forks, t_params *params, int stop_index)
 		i++;
 	}
 	pthread_mutex_destroy(&params->printf_lock);
+	pthread_mutex_destroy(&params->gen_lock);
 }
 
 int	join_threads(t_philo *philos)
@@ -84,6 +46,30 @@ int	join_threads(t_philo *philos)
 	return (0);
 }
 
+int	start_dinner(t_philo *philos, t_params *params)
+{
+	int	i;
+
+	i = 0;
+	if (params->must_eat_count == 0) // needed at all? maybe it will simply not run
+		return (ERROR);
+	//else if (params->philos_count == 1)
+		// todo
+	while (i < params->philos_count)
+	{
+		if (pthread_create(&philos[i].thread, NULL, &routine, &philos[i]) != 0)
+			return (ERROR);
+		i++;
+	}
+	params->start_time = get_current_time();
+	pthread_mutex_lock(&params->gen_lock);
+	params->all_ready = true;
+	pthread_mutex_unlock(&params->gen_lock);
+	if (join_threads(philos) == ERROR)
+		return (ERROR);
+	return (0);
+}
+
 int	main(int argc, char **argv)
 {
 	t_params		params;
@@ -96,7 +82,7 @@ int	main(int argc, char **argv)
 		return (ERROR);
 	if (init_p_f(philos, forks, &params) == ERROR)
 		return (free(philos), free(forks), ERROR);
-	if (join_threads(philos) == ERROR)
+	if (start_dinner(philos, &params) == ERROR)
 		return (free(philos), free(forks), ERROR);
 	destroy_forks(forks, &params, -1);
 	free(philos);

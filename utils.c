@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/16 09:11:49 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/22 15:23:56 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,4 +65,22 @@ int	ft_atoi(const char *str)
 		i++;
 	}
 	return (res * sign);
+}
+
+int	alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params)
+{
+	*philos = malloc(sizeof(t_philo) * params->philos_count);
+	if (!*philos)
+	{
+		error_msg("Error: malloc failed for philos.");
+		return (ERROR);
+	}
+	*forks = malloc(sizeof(pthread_mutex_t) * params->philos_count);
+	if (!*forks)
+	{
+		free(*philos);
+		error_msg("Error: malloc failed for forks.");
+		return (ERROR);
+	}
+	return (SUCCESS);
 }
