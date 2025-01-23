@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/22 21:56:13 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/23 10:21:02 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,12 @@ void	safe_printf(t_philo *philo, t_state state)
 		printf("%ld\t"GREEN"%d "RESET"is sleeping\n", stamp, philo->id);
 	else if (state == THINK)
 		printf("%ld\t"GREEN"%d "RESET"is thinking\n", stamp, philo->id);
+	else if (state == LEFT_FORK)
+		printf("%ld\t"GREEN"%d "RESET"has taken left fork\n", stamp, philo->id); // merge into one print
+	else if (state == RIGHT_FORK)
+		printf("%ld\t"GREEN"%d "RESET"has taken right fork\n", stamp, philo->id);
 	else if (state == DIED)
 		printf("%ld\t"RED"%d died\n"RESET, stamp, philo->id);
-	else if (state == LEFT_FORK || state == RIGHT_FORK)
-		printf("%ld \t%d has taken a fork\n", stamp, philo->id);
 	pthread_mutex_unlock(&philo->params->printf_lock);
 }
 
@@ -78,12 +80,34 @@ void	*routine(void *arg)
 	philo = (t_philo *)arg;
 	sync_threads(philo);
 	int i = 0;
-	while (i < 100)
+	while (1)
 	{
-		// if (routine_conditions(philo) == ERROR)
-		// 	break ;
+		if (routine_conditions(philo) == ERROR)
+		 	break ;
+		// eat
+		pthread_mutex_lock(philo->left_fork);
+		safe_printf(philo, LEFT_FORK);
+		pthread_mutex_lock(philo->right_fork);
+		safe_printf(philo, RIGHT_FORK);
+		safe_printf(philo, EAT);
+		philo->times_eaten += 1;
+		philo->last_meal = get_current_time();
+		susleep(philo->tt_eat);
+		if (philo->times_eaten == philo->must_eat_count)
+		{
+			pthread_mutex_lock(&philo->params->gen_lock);
+			philo->full = true;
+			pthread_mutex_unlock(&philo->params->gen_lock);
+		}
+		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(philo->right_fork);
+		
+		// sleep
 		safe_printf(philo, SLEEP);
-		//susleep(philo->tt_sleep);
+		susleep(philo->tt_sleep);
+		
+		// think
+		safe_printf(philo, THINK);
 		i++;
 	}
 	return (NULL);

@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/22 21:48:04 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/23 13:24:18 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ void	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 	if (prm->philos_count > 1)
 	{
 		phl[i].right_fork = &frk[(i + 1) % prm->philos_count];
-		if (prm->philos_count % 2 == 0)
+		if ((i + 1) % 2 == 0)
 		{
 			phl[i].left_fork = &frk[(i + 1) % prm->philos_count];
 			phl[i].right_fork = &frk[i];
@@ -76,6 +76,7 @@ void	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 	phl[i].tt_eat = phl[i].params->tt_eat;
 	phl[i].tt_sleep = phl[i].params->tt_sleep;
 	phl[i].must_eat_count = phl[i].params->must_eat_count;
+	phl[i].full = false;
 }
 
 int	init_forks(t_params *params, pthread_mutex_t *forks)
