@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 22:56:46 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/22 21:15:54 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/24 15:58:38 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ long	get_timestamp(long start)
 // maybe sleep for all time but the last ms. idk
 // extremely cpu dependent, test on school pc
 // + simulation could end during sleep, add a breaking condition
-int	susleep(long usec)
+int	susleep(long usec, t_params *params)
 {
 	long			start;
 
@@ -61,7 +61,8 @@ int	susleep(long usec)
 	while ((get_current_time() - start) < usec)
 	{
 		// continue ;
-		// is simulation finished?
+		if (is_dinner_over(params) == true)
+			break ;
 		usleep(50);
 	}
 	return (0);
@@ -89,3 +90,39 @@ int	susleep(long usec)
 // 	}
 // 	return (0);
 // }
+
+bool	sync_monitor(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->params->gen_lock);
+	if (philo->params->threads_running == philo->params->philos_count)
+	{
+		pthread_mutex_unlock(&philo->params->gen_lock);
+		return (true);
+	}
+	pthread_mutex_unlock(&philo->params->gen_lock);
+	return (false);
+}
+
+void	sync_threads(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->params->gen_lock);
+	while (philo->params->all_ready != true)
+	{
+		pthread_mutex_unlock(&philo->params->gen_lock); // possibly remove unlock/lock here
+		susleep(50, philo->params); // possible bottleneck?
+		pthread_mutex_lock(&philo->params->gen_lock);
+	}
+	pthread_mutex_unlock(&philo->params->gen_lock);
+	// alternatively:
+	// while (1)
+    // {
+    //     pthread_mutex_lock(&philos->params->gen_lock);
+    //     if (philos->params->all_ready == true)
+    //     {
+    //         pthread_mutex_unlock(&philos->params->gen_lock);
+    //         break;
+    //     }
+    //     pthread_mutex_unlock(&philos->params->gen_lock);
+    //     susleep(100);
+    // }
+}

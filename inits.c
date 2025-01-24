@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/23 13:24:18 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/24 18:59:33 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,20 @@ int	init_param_mutexes(t_params *params)
 {
 	if (pthread_mutex_init(&params->printf_lock, NULL) != 0)
 	{
-		error_msg("Error initializing mutexes.");
+		error_msg("Error initializing printf lock.");
 		return (ERROR);
 	}
 	if (pthread_mutex_init(&params->gen_lock, NULL) != 0)
 	{
-		error_msg("Error initializing mutexes.");
+		error_msg("Error initializing general lock.");
 		pthread_mutex_destroy(&params->printf_lock);
+		return (ERROR);
+	}
+	if (pthread_mutex_init(&params->mon_lock, NULL) != 0)
+	{
+		error_msg("Error initializing monitor lock.");
+		pthread_mutex_destroy(&params->printf_lock);
+		pthread_mutex_destroy(&params->gen_lock);
 		return (ERROR);
 	}
 	return (0);
@@ -38,25 +45,22 @@ int	init_params(t_params *params, char **argv)
 		params->must_eat_count = ft_atoi(argv[5]);
 	else
 		params->must_eat_count = -2;
-	if (params->philos_count == -1 || params->tt_die == -1
-		|| params->tt_eat == -1 || params->tt_sleep == -1)
-		return (error_msg("Error: integer overflow occurred."), ERROR);
-	if (params->tt_die < 6e4 || params->tt_eat < 6e4 || params->tt_sleep < 6e4)
-		return (error_msg("Error: time to die/eat/sleep is too short."), ERROR);
-	if (params->philos_count > 200)
-		return (error_msg("Error: too many philosophers."), ERROR);
+	if (secondary_init_checks(params) == ERROR)
+		return (ERROR);
 	params->dead_status = false;
 	params->all_ready = false;
 	params->start_time = 0;
+	params->threads_running = 0;
+	params->dinner_over = false;
 	if (init_param_mutexes(params) == ERROR)
 		return (ERROR);
 	return (0);
 }
 
-void	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
+int	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 {
 	phl[i].id = i + 1;
-	phl[i].left_fork = &frk[i]; // todo fork order. maybe reverse left/right
+	phl[i].left_fork = &frk[i];
 	if (prm->philos_count > 1)
 	{
 		phl[i].right_fork = &frk[(i + 1) % prm->philos_count];
@@ -71,12 +75,14 @@ void	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 	phl[i].params = prm;
 	phl[i].dead = &prm->dead_status;
 	phl[i].times_eaten = 0;
-	phl[i].philos_count = phl[i].params->philos_count;
-	phl[i].tt_die = phl[i].params->tt_die;
-	phl[i].tt_eat = phl[i].params->tt_eat;
-	phl[i].tt_sleep = phl[i].params->tt_sleep;
-	phl[i].must_eat_count = phl[i].params->must_eat_count;
 	phl[i].full = false;
+	phl[i].last_meal = 0; // maybe bad but better initialize it for monitor checks
+	if (pthread_mutex_init(&phl[i].philo_lock, NULL) != 0)
+	{
+		error_msg("Error initializing mutexes.");
+		return (destroy_forks(frk, prm, -1), ERROR);
+	}
+	return (0);
 }
 
 int	init_forks(t_params *params, pthread_mutex_t *forks)
@@ -105,7 +111,8 @@ int	init_p_f(t_philo *philos, pthread_mutex_t *forks, t_params *params)
 		return (ERROR);
 	while (i < params->philos_count)
 	{
-		init_philo(i, forks, params, philos);
+		if (init_philo(i, forks, params, philos) == ERROR)
+			return (destroy_philo_locks(philos, i), ERROR);
 		i++;
 	}
 	return (0);
