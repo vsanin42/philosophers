@@ -6,21 +6,11 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 17:53:38 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/24 15:30:51 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 16:17:05 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
-
-int	check_first(char *arg)
-{
-	while (*arg == '0')
-		arg++;
-	if (*arg == '\0')
-		return (ERROR);
-	else
-		return (SUCCESS);
-}
 
 int	check_arg(char *arg)
 {
@@ -52,11 +42,6 @@ int	check_args(int argc, char **argv)
 		return (ERROR);
 	}
 	argv++;
-	if (check_first(*argv) == ERROR)
-	{
-		error_msg("Error: there must be at least 1 philosopher.");
-		return (ERROR);
-	}
 	while (*argv)
 	{
 		if (check_arg(*argv) == ERROR)
@@ -68,13 +53,18 @@ int	check_args(int argc, char **argv)
 
 int	secondary_init_checks(t_params *params)
 {
-	if (params->philos_count == -1 || params->tt_die == -1
-		|| params->tt_eat == -1 || params->tt_sleep == -1)
+	// printf("ttdie: %ld\n", params->tt_die);
+	// printf("tteat: %ld\n", params->tt_eat);
+	// printf("ttsleep: %ld\n", params->tt_sleep);
+	if (params->philos_count == -1 || params->tt_die == -1000
+		|| params->tt_eat == -1000 || params->tt_sleep == -1000)
 		return (error_msg("Error: integer overflow occurred."), ERROR);
 	if (params->tt_die < 6e4 || params->tt_eat < 6e4 || params->tt_sleep < 6e4)
 		return (error_msg("Error: time to die/eat/sleep is too short."), ERROR);
 	if (params->philos_count > 200)
 		return (error_msg("Error: too many philosophers."), ERROR);
+	if (params->philos_count == 0)
+		return (error_msg("Error: there cannot be 0 philosophers."), ERROR);
 	if (params->must_eat_count == 0)
 		return (error_msg("Error: philosophers can't eat 0 times."), ERROR);
 	return (0);
@@ -89,5 +79,30 @@ bool	is_dinner_over(t_params *params)
 		return (true);
 	}
 	pthread_mutex_unlock(&params->gen_lock);
+	return (false);
+}
+
+bool	is_philo_dead(t_philo *philo)
+{
+	long	current_time;
+
+	pthread_mutex_lock(&philo->philo_lock);
+	if (philo->full == true)
+	{
+		pthread_mutex_unlock(&philo->philo_lock);
+		return (false);
+	}
+	pthread_mutex_unlock(&philo->philo_lock);
+	current_time = get_current_time();
+	pthread_mutex_lock(&philo->philo_lock);
+	if (((philo->last_meal > 0) // might need a value getter if this proves to be too long
+		&& (current_time - philo->last_meal > philo->params->tt_die))
+		|| ((philo->last_meal == 0)
+		&& (current_time - philo->params->start_time > philo->params->tt_die)))
+	{
+		pthread_mutex_unlock(&philo->philo_lock);
+		return (true);
+	}
+	pthread_mutex_unlock(&philo->philo_lock);
 	return (false);
 }

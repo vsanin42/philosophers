@@ -6,35 +6,51 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/24 18:59:08 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 17:26:51 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-bool	is_philo_dead(t_philo *philo)
+bool	is_philo_full(t_philo *philo)
 {
-	long	current_time;
-
 	pthread_mutex_lock(&philo->philo_lock);
 	if (philo->full == true)
-	{
-		pthread_mutex_unlock(&philo->philo_lock);
-		return (false);
-	}
-	pthread_mutex_unlock(&philo->philo_lock);
-	current_time = get_current_time();
-	pthread_mutex_lock(&philo->philo_lock);
-	if (((philo->last_meal > 0) // might need a value getter if this proves to be too long
-		&& (current_time - philo->last_meal > philo->params->tt_die))
-		|| ((philo->last_meal == 0)
-		&& (current_time - philo->params->start_time > philo->params->tt_die)))
 	{
 		pthread_mutex_unlock(&philo->philo_lock);
 		return (true);
 	}
 	pthread_mutex_unlock(&philo->philo_lock);
 	return (false);
+}
+
+void	*monitor(void *arg)
+{
+	int		i;
+	int		philo_num;
+	t_philo	*philo;
+
+	philo = (t_philo *)arg;
+	philo_num = philo->params->philos_count;
+	while (sync_monitor(philo) == false)
+		continue ;
+	while (is_dinner_over(philo->params) == false)
+	{
+		i = 0;
+		while (i < philo_num && !is_dinner_over(philo->params))
+		{
+			if (is_philo_dead(philo + i) == true)
+			{
+				pthread_mutex_lock(&philo->params->gen_lock);
+				philo->params->dinner_over = true;
+				pthread_mutex_unlock(&philo->params->gen_lock);
+				safe_printf(philo + i, DIED);
+				// break to avoid double died messages?
+			}
+			i++;
+		}
+	}
+	return (NULL);
 }
 
 int	start_dinner(t_philo *philos, t_params *params)
@@ -56,8 +72,8 @@ int	start_dinner(t_philo *philos, t_params *params)
 			return (ERROR);
 		i++;
 	}
-	if (pthread_create(&params->monitor, NULL, &monitor, philos) != 0) // where to join monitor thread?
-			return (ERROR);
+	if (pthread_create(&params->monitor, NULL, &monitor, philos) != 0)
+		return (ERROR);
 	params->start_time = get_current_time();
 	pthread_mutex_lock(&params->gen_lock);
 	params->all_ready = true;

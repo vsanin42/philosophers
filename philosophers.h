@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/24 19:00:40 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 17:27:08 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,9 @@
 typedef struct s_params
 {
 	int				philos_count;
-	int				tt_die;
-	int				tt_eat;
-	int				tt_sleep;
+	long			tt_die;
+	long			tt_eat;
+	long			tt_sleep;
 	int				must_eat_count;
 	int				threads_running;
 	long			start_time;
@@ -44,7 +44,6 @@ typedef struct s_params
 	bool			dinner_over;
 	pthread_mutex_t	printf_lock;
 	pthread_mutex_t	gen_lock;
-	pthread_mutex_t	mon_lock;
 	pthread_t		monitor; // join this
 }		t_params;
 
@@ -78,7 +77,7 @@ void	error_msg(char *msg);
 int		ft_isdigit(int c);
 int		ft_strlen(char const *str);
 int		ft_atoi(const char *str);
-int		alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params);
+void	safe_printf(t_philo *philo, t_state state);
 
 /* inits.c */
 int		init_params(t_params *params, char **argv);
@@ -88,11 +87,11 @@ int		init_p_f(t_philo *philos, pthread_mutex_t *forks, t_params *params);
 int		init_param_mutexes(t_params *params);
 
 /* checks.c */
-int		check_first(char *arg);
 int		check_arg(char *arg);
 int		check_args(int argc, char **argv);
 int		secondary_init_checks(t_params *params);
 bool	is_dinner_over(t_params *params);
+bool	is_philo_dead(t_philo *philo);
 
 /* time.c */
 long	get_current_time(void);
@@ -102,20 +101,22 @@ void	sync_threads(t_philo *philo);
 bool	sync_monitor(t_philo *philo);
 
 /* routine.c */
-void	safe_printf(t_philo *philo, t_state state);
-void	*monitor(void *arg);
 void	*philone(void *arg);
 void	*routine(void *arg);
 void	routine_eat(t_philo *philo);
+void	routine_think(t_philo *philo, bool print_flag);
+void	routine_offset(t_philo *philo);
 
 /* cleaning.c */
 void	big_clean(t_philo *philos, pthread_mutex_t *forks, t_params *params);
 void	destroy_forks(pthread_mutex_t *forks, t_params *params, int stop_index);
 void	destroy_philo_locks(t_philo *philo, int stop_index);
 int		join_threads(t_philo *philos);
+int		alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params);
 
 /* main.c */
-bool	is_philo_dead(t_philo *philo);
+bool	is_philo_full(t_philo *philo);
+void	*monitor(void *arg);
 int		start_dinner(t_philo *philos, t_params *params);
 
 #endif

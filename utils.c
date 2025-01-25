@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/22 15:23:56 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 15:43:29 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,20 +67,24 @@ int	ft_atoi(const char *str)
 	return (res * sign);
 }
 
-int	alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params)
+void	safe_printf(t_philo *philo, t_state state)
 {
-	*philos = malloc(sizeof(t_philo) * params->philos_count);
-	if (!*philos)
-	{
-		error_msg("Error: malloc failed for philos.");
-		return (ERROR);
-	}
-	*forks = malloc(sizeof(pthread_mutex_t) * params->philos_count);
-	if (!*forks)
-	{
-		free(*philos);
-		error_msg("Error: malloc failed for forks.");
-		return (ERROR);
-	}
-	return (SUCCESS);
+	long	stamp;
+
+	stamp = get_timestamp(philo->params->start_time);
+	if (is_dinner_over(philo->params) == true && state != DIED) // thread safe?
+		return ;
+	pthread_mutex_lock(&philo->params->printf_lock);
+	if (state == EAT && !is_dinner_over(philo->params))
+		printf("%ld\t"GREEN"%d is eating"RESET"\n", stamp, philo->id);
+	else if (state == SLEEP && !is_dinner_over(philo->params))
+		printf("%ld\t"GREEN"%d "RESET"is sleeping\n", stamp, philo->id);
+	else if (state == THINK && !is_dinner_over(philo->params))
+		printf("%ld\t"GREEN"%d "RESET"is thinking\n", stamp, philo->id);
+	else if ((state == LEFT_FORK || state == RIGHT_FORK)
+		&& !is_dinner_over(philo->params))
+		printf("%ld\t"GREEN"%d "RESET"has taken a fork\n", stamp, philo->id);
+	else if (state == DIED)
+		printf("%ld\t"RED"%d died\n"RESET, stamp, philo->id);
+	pthread_mutex_unlock(&philo->params->printf_lock);
 }

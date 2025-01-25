@@ -6,61 +6,11 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/24 19:00:30 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 17:32:02 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
-
-void	safe_printf(t_philo *philo, t_state state)
-{
-	long	stamp;
-
-	stamp = get_timestamp(philo->params->start_time);
-	if (is_dinner_over(philo->params) == true) // thread safe?
-		return ;
-	pthread_mutex_lock(&philo->params->printf_lock);
-	if (state == EAT && !is_dinner_over(philo->params))
-		printf("%ld\t"GREEN"%d "RESET"is eating\n", stamp, philo->id);
-	else if (state == SLEEP && !is_dinner_over(philo->params))
-		printf("%ld\t"GREEN"%d "RESET"is sleeping\n", stamp, philo->id);
-	else if (state == THINK && !is_dinner_over(philo->params))
-		printf("%ld\t"GREEN"%d "RESET"is thinking\n", stamp, philo->id);
-	else if ((state == LEFT_FORK || state == RIGHT_FORK)
-		&& !is_dinner_over(philo->params))
-		printf("%ld\t"GREEN"%d "RESET"has taken a fork\n", stamp, philo->id);
-	else if (state == DIED && !is_dinner_over(philo->params))
-		printf("%ld\t"RED"%d died\n"RESET, stamp, philo->id);
-	pthread_mutex_unlock(&philo->params->printf_lock);
-}
-
-void	*monitor(void *arg)
-{
-	int		i;
-	int		philo_num;
-	t_philo	*philo;
-
-	philo = (t_philo *)arg;
-	philo_num = philo->params->philos_count;
-	while (sync_monitor(philo) == false)
-		continue ;
-	while (is_dinner_over(philo->params) == false)
-	{
-		i = 0;
-		while (i < philo_num && !is_dinner_over(philo->params))
-		{
-			if (is_philo_dead(philo + i) == true)
-			{
-				pthread_mutex_lock(&philo->params->gen_lock);
-				philo->params->dinner_over = true;
-				pthread_mutex_unlock(&philo->params->gen_lock);
-				safe_printf(philo, DIED);
-			}
-			i++;
-		}
-	}
-	return (NULL);
-}
 
 void	*philone(void *arg)
 {
@@ -84,21 +34,15 @@ void	*routine(void *arg)
 	pthread_mutex_lock(&philo->params->gen_lock);
 	philo->params->threads_running += 1;
 	pthread_mutex_unlock(&philo->params->gen_lock);
-	int i = 0;
+	routine_offset(philo);
 	while (is_dinner_over(philo->params) == false)
 	{
-		pthread_mutex_lock(&philo->philo_lock);
-		if (philo->full == true)
-		{
-			pthread_mutex_unlock(&philo->philo_lock);
-			break ;
-		}
-		pthread_mutex_unlock(&philo->philo_lock);
 		routine_eat(philo);
+		if (is_philo_full(philo))
+			break ;
 		safe_printf(philo, SLEEP);
-		susleep(philo->params->tt_sleep, philo->params);		
-		safe_printf(philo, THINK);
-		i++;
+		susleep(philo->params->tt_sleep, philo->params);
+		routine_think(philo, true);
 	}
 	return (NULL);
 }
@@ -123,4 +67,36 @@ void	routine_eat(t_philo *philo)
 	}
 	pthread_mutex_unlock(philo->left_fork);
 	pthread_mutex_unlock(philo->right_fork);
+}
+
+void	routine_think(t_philo *philo, bool print_flag)
+{
+	long	eat;
+	long	sleep;
+	long	think;
+
+	if (print_flag == true)
+		safe_printf(philo, THINK);
+	if (philo->params->philos_count % 2 == 0)
+		return ;
+	eat = philo->params->tt_eat;
+	sleep = philo->params->tt_sleep;
+	think = eat * 2 - sleep;
+	if (think < 0)
+		think = 0;
+	susleep(think * 0.5, philo->params);
+}
+
+void	routine_offset(t_philo *philo)
+{
+	if (philo->params->philos_count % 2 == 0)
+	{
+		if (philo->id % 2 == 0)
+			susleep(30000, philo->params);
+	}
+	else
+	{
+		if (philo->id % 2 != 0)
+			routine_think(philo, false); // true if i want to start with odd ids thinking or doing nothing
+	}
 }

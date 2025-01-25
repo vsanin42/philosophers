@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 22:56:46 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/24 15:58:38 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 16:24:44 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ long	get_timestamp(long start)
 // for now ok, still causes delays despite all.
 // maybe sleep for all time but the last ms. idk
 // extremely cpu dependent, test on school pc
-// + simulation could end during sleep, add a breaking condition
 int	susleep(long usec, t_params *params)
 {
 	long			start;

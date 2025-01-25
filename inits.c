@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/24 18:59:33 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 16:15:47 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,22 +25,15 @@ int	init_param_mutexes(t_params *params)
 		pthread_mutex_destroy(&params->printf_lock);
 		return (ERROR);
 	}
-	if (pthread_mutex_init(&params->mon_lock, NULL) != 0)
-	{
-		error_msg("Error initializing monitor lock.");
-		pthread_mutex_destroy(&params->printf_lock);
-		pthread_mutex_destroy(&params->gen_lock);
-		return (ERROR);
-	}
 	return (0);
 }
 
 int	init_params(t_params *params, char **argv)
 {
 	params->philos_count = ft_atoi(argv[1]);
-	params->tt_die = ft_atoi(argv[2]) * 1000;
-	params->tt_eat = ft_atoi(argv[3]) * 1000;
-	params->tt_sleep = ft_atoi(argv[4]) * 1000;
+	params->tt_die = ft_atoi(argv[2]) * 1000L;
+	params->tt_eat = ft_atoi(argv[3]) * 1000L;
+	params->tt_sleep = ft_atoi(argv[4]) * 1000L;
 	if (argv[5])
 		params->must_eat_count = ft_atoi(argv[5]);
 	else

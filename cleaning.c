@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:17:43 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/24 19:01:13 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/25 17:24:56 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ void	destroy_forks(pthread_mutex_t *forks, t_params *params, int stop_index)
 	}
 	pthread_mutex_destroy(&params->printf_lock);
 	pthread_mutex_destroy(&params->gen_lock);
-	pthread_mutex_destroy(&params->mon_lock);
 }
 
 void	destroy_philo_locks(t_philo *philo, int stop_index)
@@ -70,10 +69,31 @@ int	join_threads(t_philo *philos)
 			return (error_msg("Error: joining threads failed."), ERROR);
 		i++;
 	}
+	pthread_mutex_lock(&philos->params->gen_lock);
+	philos->params->dinner_over = true;
+	pthread_mutex_unlock(&philos->params->gen_lock);
 	if (i > 1)
 	{
 		if (pthread_join(philos->params->monitor, NULL) != 0)
 			return (error_msg("Error: joining monitor thread failed."), ERROR);
 	}
 	return (0);
+}
+
+int	alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params)
+{
+	*philos = malloc(sizeof(t_philo) * params->philos_count);
+	if (!*philos)
+	{
+		error_msg("Error: malloc failed for philos.");
+		return (ERROR);
+	}
+	*forks = malloc(sizeof(pthread_mutex_t) * params->philos_count);
+	if (!*forks)
+	{
+		free(*philos);
+		error_msg("Error: malloc failed for forks.");
+		return (ERROR);
+	}
+	return (SUCCESS);
 }
