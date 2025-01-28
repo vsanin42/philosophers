@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 15:20:44 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/28 17:15:21 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,17 +84,12 @@ int	start_dinner(t_dinner *dinner)
 
 int	main(int argc, char **argv)
 {
-	// t_params		params;
-	// t_philo			*philos;
-	// pthread_mutex_t	*forks;
 	t_dinner	dinner;
 
 	if (check_args(argc, argv) == ERROR)
 		return (ERROR);
-	if (init_dinner(&dinner) == ERROR)
+	if (init_dinner(&dinner, argv) == ERROR)
 		return (ERROR);
-	// if (init_p_f(philos, forks, &params) == ERROR)	// inside init_dinner?
-	// 	return (ERROR);
 	if (start_dinner(&dinner) == ERROR)
 		return (ERROR);
 	// if (join_threads(philos) == ERROR)	// if threads are used, join in the end

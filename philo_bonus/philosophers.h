@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 15:23:20 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/28 23:05:25 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # define SUCCESS 0
 # define ERROR 1
+# define MAX_PHILOS 200
 # define _GNU_SOURCE
 
 # include <unistd.h>
@@ -25,6 +26,8 @@
 # include <pthread.h>
 # include <limits.h>
 # include <stdbool.h>
+# include <semaphore.h>
+# include <fcntl.h>
 
 # define RED		"\033[31m"
 # define GREEN		"\033[32m"
@@ -41,7 +44,7 @@ typedef struct s_params
 	long			start_time;
 	bool			all_ready;
 	bool			dinner_over;
-	pthread_t		monitor; // join this
+	pthread_t		monitor; // join this. init at start_dinner
 }		t_params;
 
 typedef struct s_philo
@@ -66,7 +69,7 @@ typedef enum e_state
 
 typedef struct s_dinner
 {
-	t_philo		*philo;
+	t_philo		*philos;
 	t_params	*params;
 	int			*pids;
 }				t_dinner;
@@ -80,9 +83,8 @@ void	safe_printf(t_philo *philo, t_state state);
 
 /* inits.c */
 int		init_params(t_params *params, char **argv);
-int		init_philo(int i, t_params *prm, t_philo *phl);
-int		init_p_f(t_philo *philos, t_params *params);
-int		init_dinner(t_dinner *dinner);
+int		init_philos(t_philo *philos, t_params *params);
+int		init_dinner(t_dinner *dinner, char **argv);
 
 /* checks.c */
 int		check_arg(char *arg);

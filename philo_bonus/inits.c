@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 15:19:25 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/29 00:37:47 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,43 +24,43 @@ int	init_params(t_params *params, char **argv)
 		params->must_eat_count = -2;
 	if (secondary_init_checks(params) == ERROR)
 		return (ERROR);
-	params->dead_status = false;
 	params->all_ready = false;
 	params->start_time = 0;
 	params->threads_running = 0;
 	params->dinner_over = false;
-	if (init_param_mutexes(params) == ERROR)
-		return (ERROR);
-	return (0);
-}
-
-int	init_philo(int i, t_params *prm, t_philo *phl)
-{
-	phl[i].id = i + 1;
-	phl[i].params = prm;
-	phl[i].dead = &prm->dead_status;
-	phl[i].times_eaten = 0;
-	phl[i].full = false;
-	phl[i].last_meal = 0; // maybe bad but better initialize it for monitor checks
 	return (0);
 }
 
 
-int	init_p_f(t_philo *philos, t_params *params)
+int	init_philos(t_philo *philos, t_params *params)
 {
 	int	i;
 
 	i = 0;
 	while (i < params->philos_count)
 	{
-		if (init_philo(i, params, philos) == ERROR)
-			return (ERROR);
+		philos[i].id = i + 1;
+		philos[i].params = params;
+		philos[i].times_eaten = 0;
+		philos[i].full = false;
+		philos[i].last_meal = 0; // maybe bad but better initialize it for monitor checks
 		i++;
 	}
 	return (0);
 }
 
-int	init_dinner(t_dinner *dinner)
+int	init_dinner(t_dinner *dinner, char **argv) // this is bad. TODO
 {
-	
+	t_params	*params;
+	t_philo		philos[MAX_PHILOS];
+	int			pids[MAX_PHILOS];
+
+	if (init_params(params, argv) == ERROR)
+		return (ERROR);
+	if (init_philos(philos, params) == ERROR)
+		return (ERROR);
+	dinner->params = params;
+	dinner->philos = philos;
+	dinner->pids = pids;
+	return (0);
 }
