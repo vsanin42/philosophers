@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 17:26:51 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/28 15:20:44 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,13 @@
 
 bool	is_philo_full(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->philo_lock);
+	// pthread_mutex_lock(&philo->philo_lock);
 	if (philo->full == true)
 	{
-		pthread_mutex_unlock(&philo->philo_lock);
+		// pthread_mutex_unlock(&philo->philo_lock);
 		return (true);
 	}
-	pthread_mutex_unlock(&philo->philo_lock);
+	// pthread_mutex_unlock(&philo->philo_lock);
 	return (false);
 }
 
@@ -41,9 +41,9 @@ void	*monitor(void *arg)
 		{
 			if (is_philo_dead(philo + i) == true)
 			{
-				pthread_mutex_lock(&philo->params->gen_lock);
+				// pthread_mutex_lock(&philo->params->gen_lock);	// ?
 				philo->params->dinner_over = true;
-				pthread_mutex_unlock(&philo->params->gen_lock);
+				// pthread_mutex_unlock(&philo->params->gen_lock);
 				safe_printf(philo + i, DIED);
 				// break to avoid double died messages?
 			}
@@ -53,9 +53,10 @@ void	*monitor(void *arg)
 	return (NULL);
 }
 
-int	start_dinner(t_philo *philos, t_params *params)
+// TODO LATER when it's initialized and all that
+int	start_dinner(t_dinner *dinner)
 {
-	int	i;
+	/* int	i;
 
 	i = 0;
 	if (params->must_eat_count == 0) // needed at all? maybe it will simply not run
@@ -78,25 +79,25 @@ int	start_dinner(t_philo *philos, t_params *params)
 	pthread_mutex_lock(&params->gen_lock);
 	params->all_ready = true;
 	pthread_mutex_unlock(&params->gen_lock);
-	return (0);
+	return (0); */
 }
 
 int	main(int argc, char **argv)
 {
-	t_params		params;
-	t_philo			*philos;
-	pthread_mutex_t	*forks;
+	// t_params		params;
+	// t_philo			*philos;
+	// pthread_mutex_t	*forks;
+	t_dinner	dinner;
 
-	if (check_args(argc, argv) == ERROR || init_params(&params, argv) == ERROR)
+	if (check_args(argc, argv) == ERROR)
 		return (ERROR);
-	if (alloc_p_f(&philos, &forks, &params) == ERROR)
+	if (init_dinner(&dinner) == ERROR)
 		return (ERROR);
-	if (init_p_f(philos, forks, &params) == ERROR)
-		return (free(philos), free(forks), ERROR);
-	if (start_dinner(philos, &params) == ERROR)
-		return (big_clean(philos, forks, &params), ERROR);
-	if (join_threads(philos) == ERROR)
-		return (big_clean(philos, forks, &params), ERROR);
-	big_clean(philos, forks, &params);
+	// if (init_p_f(philos, forks, &params) == ERROR)	// inside init_dinner?
+	// 	return (ERROR);
+	if (start_dinner(&dinner) == ERROR)
+		return (ERROR);
+	// if (join_threads(philos) == ERROR)	// if threads are used, join in the end
+	// 	return (ERROR);
 	return (0);
 }

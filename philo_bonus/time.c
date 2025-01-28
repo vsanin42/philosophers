@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 22:56:46 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 16:24:44 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/28 15:16:12 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,28 +90,31 @@ int	susleep(long usec, t_params *params)
 // 	return (0);
 // }
 
+
+
+// HOW TO SYNC?
 bool	sync_monitor(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->params->gen_lock);
+	// pthread_mutex_lock(&philo->params->gen_lock);
 	if (philo->params->threads_running == philo->params->philos_count)
 	{
-		pthread_mutex_unlock(&philo->params->gen_lock);
+		// pthread_mutex_unlock(&philo->params->gen_lock);
 		return (true);
 	}
-	pthread_mutex_unlock(&philo->params->gen_lock);
+	// pthread_mutex_unlock(&philo->params->gen_lock);
 	return (false);
 }
 
 void	sync_threads(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->params->gen_lock);
+	// pthread_mutex_lock(&philo->params->gen_lock);
 	while (philo->params->all_ready != true)
 	{
-		pthread_mutex_unlock(&philo->params->gen_lock); // possibly remove unlock/lock here
+		// pthread_mutex_unlock(&philo->params->gen_lock); // possibly remove unlock/lock here
 		susleep(50, philo->params); // possible bottleneck?
-		pthread_mutex_lock(&philo->params->gen_lock);
+		// pthread_mutex_lock(&philo->params->gen_lock);
 	}
-	pthread_mutex_unlock(&philo->params->gen_lock);
+	// pthread_mutex_unlock(&philo->params->gen_lock);
 	// alternatively:
 	// while (1)
     // {

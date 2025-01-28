@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 17:32:02 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/28 15:21:21 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ void	*routine(void *arg)
 	philo = (t_philo *)arg;
 	sync_threads(philo);
 	// set last meal time to current time here? it's kinda handled
-	pthread_mutex_lock(&philo->params->gen_lock);
+	// pthread_mutex_lock(&philo->params->gen_lock);
 	philo->params->threads_running += 1;
-	pthread_mutex_unlock(&philo->params->gen_lock);
+	// pthread_mutex_unlock(&philo->params->gen_lock);
 	routine_offset(philo);
 	while (is_dinner_over(philo->params) == false)
 	{
@@ -49,24 +49,24 @@ void	*routine(void *arg)
 
 void	routine_eat(t_philo *philo)
 {
-	pthread_mutex_lock(philo->left_fork);
+	// pthread_mutex_lock(philo->left_fork);
 	safe_printf(philo, LEFT_FORK);
-	pthread_mutex_lock(philo->right_fork);
+	// pthread_mutex_lock(philo->right_fork);
 	safe_printf(philo, RIGHT_FORK);
-	pthread_mutex_lock(&philo->philo_lock);
+	// pthread_mutex_lock(&philo->philo_lock);
 	philo->last_meal = get_current_time();
-	pthread_mutex_unlock(&philo->philo_lock);
+	// pthread_mutex_unlock(&philo->philo_lock);
 	philo->times_eaten += 1;
 	safe_printf(philo, EAT);
 	susleep(philo->params->tt_eat, philo->params);
 	if (philo->times_eaten == philo->params->must_eat_count)
 	{
-		pthread_mutex_lock(&philo->philo_lock);
+		// pthread_mutex_lock(&philo->philo_lock);
 		philo->full = true;
-		pthread_mutex_unlock(&philo->philo_lock);
+		// pthread_mutex_unlock(&philo->philo_lock);
 	}
-	pthread_mutex_unlock(philo->left_fork);
-	pthread_mutex_unlock(philo->right_fork);
+	// pthread_mutex_unlock(philo->left_fork);
+	// pthread_mutex_unlock(philo->right_fork);
 }
 
 void	routine_think(t_philo *philo, bool print_flag)
