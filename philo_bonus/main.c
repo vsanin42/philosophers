@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 17:15:21 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/29 15:41:56 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void	*monitor(void *arg)
 }
 
 // TODO LATER when it's initialized and all that
-int	start_dinner(t_dinner *dinner)
+int	start_dinner(t_philo *philos, t_params *params)
 {
 	/* int	i;
 
@@ -84,15 +84,21 @@ int	start_dinner(t_dinner *dinner)
 
 int	main(int argc, char **argv)
 {
-	t_dinner	dinner;
-
-	if (check_args(argc, argv) == ERROR)
+	t_params	params;
+	t_philo		philos[MAX_PHILOS];
+	pid_t		pids[MAX_PHILOS];
+	
+	if (check_args(argc, argv) == ERROR || init_params(&params, argv, pids))
 		return (ERROR);
-	if (init_dinner(&dinner, argv) == ERROR)
+	init_philos(philos, &params);
+	if (start_dinner(philos, &params) == ERROR)
+	{
+		clean_semaphores(&params);
 		return (ERROR);
-	if (start_dinner(&dinner) == ERROR)
-		return (ERROR);
+	}
 	// if (join_threads(philos) == ERROR)	// if threads are used, join in the end
 	// 	return (ERROR);
+	if (clean_semaphores(&params) == ERROR)
+		return (ERROR);
 	return (0);
 }

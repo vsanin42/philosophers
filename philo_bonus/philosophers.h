@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 23:05:25 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/29 15:37:42 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,10 @@ typedef struct s_params
 	long			start_time;
 	bool			all_ready;
 	bool			dinner_over;
+	pid_t			*pids;
 	pthread_t		monitor; // join this. init at start_dinner
+	sem_t			*sem_forks;
+	sem_t			*sem_printf;
 }		t_params;
 
 typedef struct s_philo
@@ -82,9 +85,8 @@ int		ft_atoi(const char *str);
 void	safe_printf(t_philo *philo, t_state state);
 
 /* inits.c */
-int		init_params(t_params *params, char **argv);
+int		init_params(t_params *params, char **argv, pid_t *pids);
 int		init_philos(t_philo *philos, t_params *params);
-int		init_dinner(t_dinner *dinner, char **argv);
 
 /* checks.c */
 int		check_arg(char *arg);
@@ -108,11 +110,12 @@ void	routine_think(t_philo *philo, bool print_flag);
 void	routine_offset(t_philo *philo);
 
 /* cleaning.c */
+int		clean_semaphores(t_params *params);
 int		join_threads(t_philo *philos);
 
 /* main.c */
 bool	is_philo_full(t_philo *philo);
 void	*monitor(void *arg);
-int		start_dinner(t_dinner *dinner);
+int		start_dinner(t_philo *philos, t_params *params);
 
 #endif

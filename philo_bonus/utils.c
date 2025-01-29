@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 19:22:12 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/29 15:45:20 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void	safe_printf(t_philo *philo, t_state state)
 	stamp = get_timestamp(philo->params->start_time);
 	if (is_dinner_over(philo->params) == true && state != DIED) // thread safe?
 		return ;
-	// sem wait here
+	sem_wait(philo->params->sem_printf);
 	if (state == EAT && !is_dinner_over(philo->params))
 		printf("%ld\t"GREEN"%d is eating"RESET"\n", stamp, philo->id);
 	else if (state == SLEEP && !is_dinner_over(philo->params))
@@ -86,5 +86,5 @@ void	safe_printf(t_philo *philo, t_state state)
 		printf("%ld\t"GREEN"%d "RESET"has taken a fork\n", stamp, philo->id);
 	else if (state == DIED)
 		printf("%ld\t"RED"%d died\n"RESET, stamp, philo->id);
-	// sem post here
+	sem_post(philo->params->sem_printf);
 }
