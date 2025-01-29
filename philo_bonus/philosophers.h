@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/29 15:37:42 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/29 21:22:26 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <sys/time.h>
+# include <sys/wait.h>
 # include <pthread.h>
 # include <limits.h>
 # include <stdbool.h>
@@ -103,6 +104,12 @@ void	sync_threads(t_philo *philo);
 bool	sync_monitor(t_philo *philo);
 
 /* routine.c */
+int		process_single(t_philo *philo);
+void	process_eat(t_philo *philo);
+void	process_routine(t_philo *philo);
+
+
+
 void	*philone(void *arg);
 void	*routine(void *arg);
 void	routine_eat(t_philo *philo);
@@ -116,6 +123,7 @@ int		join_threads(t_philo *philos);
 /* main.c */
 bool	is_philo_full(t_philo *philo);
 void	*monitor(void *arg);
+int		wait_for_children(t_params *params);
 int		start_dinner(t_philo *philos, t_params *params);
 
 #endif

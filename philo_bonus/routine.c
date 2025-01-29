@@ -6,11 +6,81 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 15:21:21 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/29 21:37:53 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
+
+int	process_single(t_philo *philo)
+{
+	philo->params->pids[0] = fork();
+	if (philo->params->pids[0] == -1)
+		return (error_msg("Error: forking failed."), ERROR);
+	if (philo->params->pids[0] == 0)
+	{
+		philo->params->start_time = get_current_time();
+		safe_printf(philo, LEFT_FORK);
+		susleep(philo->params->tt_die, philo->params);
+		safe_printf(philo, DIED);
+		sem_close(philo->params->sem_printf);
+		sem_close(philo->params->sem_forks);
+		exit(0);
+	}
+	return (wait_for_children(philo->params));
+}
+
+void	process_eat(t_philo *philo)
+{
+	sem_wait(philo->params->sem_forks);
+	safe_printf(philo, LEFT_FORK);
+	sem_wait(philo->params->sem_forks);
+	safe_printf(philo, RIGHT_FORK);
+	// sem wait?
+	philo->last_meal = get_current_time();
+	// sem post?
+	philo->times_eaten += 1;
+	safe_printf(philo, EAT);
+	susleep(philo->params->tt_eat, philo->params);
+	if (philo->times_eaten == philo->params->must_eat_count)
+	{
+		// sem wait?
+		philo->full = true;
+		// sem post?
+	}
+}
+
+void	process_routine(t_philo *philo)
+{
+	sem_wait(philo->params->sem_printf);
+	printf("Philo %d: yeah science, bitch!\n", philo->id);
+	sem_post(philo->params->sem_printf);
+	// syncing? threads running? self monitoring thread? routine offset?
+	/* while (is_dinner_over(philo->params) == false)
+	{
+		process_eat(philo);
+		if (is_philo_full(philo))
+			break ;
+		safe_printf(philo, SLEEP);
+		susleep(philo->params->tt_sleep, philo->params);
+		safe_printf(philo, THINK); // placeholder, may need better logic like in mandatory
+	} */
+	sem_close(philo->params->sem_printf);
+	sem_close(philo->params->sem_forks);
+	exit(0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 void	*philone(void *arg)
 {

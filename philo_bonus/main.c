@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/29 15:41:56 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/29 21:15:52 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,47 @@ void	*monitor(void *arg)
 	return (NULL);
 }
 
-// TODO LATER when it's initialized and all that
+int	wait_for_children(t_params *params)
+{
+	int	status;
+	int	i;
+
+	i = 0;
+	status = 0;
+	while (i < params->philos_count)
+	{
+		if (waitpid(params->pids[i], &status, 0) == -1)
+			return (error_msg("Error: failed in waitpid."), ERROR);
+		i++;
+	}
+	return (0);
+}
+
 int	start_dinner(t_philo *philos, t_params *params)
 {
-	/* int	i;
+	int	i;
+
+	i = 0;
+	if (params->philos_count == 1)
+		return (process_single(philos));
+	while (i < params->philos_count)
+	{
+		params->pids[i] = fork();
+		if (params->pids[i] == -1)
+			return (error_msg("Error: forking failed."), ERROR);
+		if (params->pids[i] == 0)
+		{
+			// thread creation and sync?
+			process_routine(&philos[i]);
+		}
+		// else needed ?
+		i++;
+	}
+	return (wait_for_children(params));
+}
+
+/*
+	int	i;
 
 	i = 0;
 	if (params->must_eat_count == 0) // needed at all? maybe it will simply not run
@@ -79,8 +116,8 @@ int	start_dinner(t_philo *philos, t_params *params)
 	pthread_mutex_lock(&params->gen_lock);
 	params->all_ready = true;
 	pthread_mutex_unlock(&params->gen_lock);
-	return (0); */
-}
+	return (0);
+*/
 
 int	main(int argc, char **argv)
 {
