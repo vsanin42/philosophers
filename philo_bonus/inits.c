@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/29 14:47:47 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 18:55:57 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,20 @@
 
 int	init_semaphores(t_params *params)
 {
-	int	count;
-
-	count = params->philos_count;
-	params->sem_forks = sem_open("/forks", O_CREAT, 0666, count);
-	if (params->sem_forks == SEM_FAILED)
-	{
-		return (error_msg("Error: failed to open forks semaphore."), ERROR);
-	}
+	params->sem_forks = sem_open("/forks", O_CREAT, 0666, params->philos_count);
 	params->sem_printf = sem_open("/printf", O_CREAT, 0666, 1);
-	if (params->sem_printf == SEM_FAILED)
+	params->sem_start = sem_open("/start", O_CREAT, 0666, 0);
+	params->sem_global = sem_open("/global", O_CREAT, 0666, 1);
+	if (params->sem_forks == SEM_FAILED || params->sem_printf == SEM_FAILED
+		|| params->sem_start == SEM_FAILED || params->sem_global == SEM_FAILED)
 	{
-		if (sem_unlink("/forks") == -1)
-			return (error_msg("Error: failed to unlink a semaphore."), ERROR);
-		return (error_msg("Error: failed to open printf semaphore."), ERROR);
+		if (params->sem_forks != SEM_FAILED)
+			sem_unlink("/forks");
+		if (params->sem_printf != SEM_FAILED)
+			sem_unlink("/printf");
+		if (params->sem_start != SEM_FAILED)
+			sem_unlink("/start");
+		return (error_msg("Error: failed initializing a semaphore."), ERROR);
 	}
 	return (0);
 }
@@ -54,10 +54,51 @@ int	init_params(t_params *params, char **argv, pid_t *pids)
 	return (0);
 }
 
+int	append_id(char *buffer, int base_len, int id)
+{
+	char	temp[4];
+	int		i;
+
+	i = 0;
+	while (id > 0 && i < 3)
+	{
+		temp[i++] = (id % 10) + '0';
+		id /= 10;
+	}
+	i -= 1;
+	while (i >= 0)
+	{
+		buffer[base_len] = temp[i];
+		base_len++;
+		i--;
+	}
+	buffer[base_len] = '\0';
+	return (0);
+}
+
+int	generate_sem_name(char *buffer, int id)
+{	
+	char	*base;
+	int		base_len;
+	int		i;
+
+	i = 0;
+	base = "/philo_";
+	base_len = ft_strlen(base);
+	while (i < base_len)
+	{
+		buffer[i] = base[i];
+		i++;
+	}
+	buffer[i] = '\0';
+	append_id(buffer, i, id);
+	return (0); 
+}
 
 int	init_philos(t_philo *philos, t_params *params)
 {
-	int	i;
+	int		i;
+	char	sem_name[11];
 
 	i = 0;
 	while (i < params->philos_count)
@@ -67,6 +108,10 @@ int	init_philos(t_philo *philos, t_params *params)
 		philos[i].times_eaten = 0;
 		philos[i].full = false;
 		philos[i].last_meal = 0; // maybe bad but better initialize it for monitor checks
+		generate_sem_name(sem_name, philos[i].id);
+		philos[i].sem_philo = sem_open(sem_name, O_CREAT, 0666, 1);
+		if (philos[i].sem_philo == SEM_FAILED)
+			return (error_msg("Error: failed opening philo semaphore."), ERROR);
 		i++;
 	}
 	return (0);

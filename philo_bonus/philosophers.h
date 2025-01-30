@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/29 21:22:26 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 18:18:27 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ typedef struct s_params
 	pthread_t		monitor; // join this. init at start_dinner
 	sem_t			*sem_forks;
 	sem_t			*sem_printf;
+	sem_t			*sem_start;
+	sem_t			*sem_global;
 }		t_params;
 
 typedef struct s_philo
@@ -59,6 +61,7 @@ typedef struct s_philo
 	bool			full;
 	int				times_eaten;
 	long			last_meal;
+	sem_t			*sem_philo;
 }					t_philo;
 
 typedef enum e_state
@@ -71,13 +74,6 @@ typedef enum e_state
 	DIED,
 }	t_state;
 
-typedef struct s_dinner
-{
-	t_philo		*philos;
-	t_params	*params;
-	int			*pids;
-}				t_dinner;
-
 /* utils.c */
 void	error_msg(char *msg);
 int		ft_isdigit(int c);
@@ -86,6 +82,9 @@ int		ft_atoi(const char *str);
 void	safe_printf(t_philo *philo, t_state state);
 
 /* inits.c */
+int		append_id(char *buffer, int base_len, int id);
+int		generate_sem_name(char *buffer, int id);
+int		init_semaphores(t_params *params);
 int		init_params(t_params *params, char **argv, pid_t *pids);
 int		init_philos(t_philo *philos, t_params *params);
 
@@ -107,17 +106,20 @@ bool	sync_monitor(t_philo *philo);
 int		process_single(t_philo *philo);
 void	process_eat(t_philo *philo);
 void	process_routine(t_philo *philo);
+void	process_offset(t_philo *philo);
+void	process_think(t_philo *philo, bool print_flag);
 
 
 
-void	*philone(void *arg);
 void	*routine(void *arg);
 void	routine_eat(t_philo *philo);
 void	routine_think(t_philo *philo, bool print_flag);
 void	routine_offset(t_philo *philo);
 
 /* cleaning.c */
-int		clean_semaphores(t_params *params);
+int		clean_param_sems(t_params *params);
+int		clean_philo_sems(t_philo *philos);
+int		clean_semaphores(t_philo *philos, t_params *params);
 int		join_threads(t_philo *philos);
 
 /* main.c */

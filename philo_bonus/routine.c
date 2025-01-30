@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/29 21:37:53 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 18:54:17 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,110 +36,23 @@ void	process_eat(t_philo *philo)
 	safe_printf(philo, LEFT_FORK);
 	sem_wait(philo->params->sem_forks);
 	safe_printf(philo, RIGHT_FORK);
-	// sem wait?
+	sem_wait(philo->sem_philo);
 	philo->last_meal = get_current_time();
-	// sem post?
+	sem_post(philo->sem_philo);
 	philo->times_eaten += 1;
 	safe_printf(philo, EAT);
 	susleep(philo->params->tt_eat, philo->params);
 	if (philo->times_eaten == philo->params->must_eat_count)
 	{
-		// sem wait?
+		sem_wait(philo->sem_philo);
 		philo->full = true;
-		// sem post?
+		sem_post(philo->sem_philo);
 	}
+	sem_post(philo->params->sem_forks);
+	sem_post(philo->params->sem_forks);
 }
 
-void	process_routine(t_philo *philo)
-{
-	sem_wait(philo->params->sem_printf);
-	printf("Philo %d: yeah science, bitch!\n", philo->id);
-	sem_post(philo->params->sem_printf);
-	// syncing? threads running? self monitoring thread? routine offset?
-	/* while (is_dinner_over(philo->params) == false)
-	{
-		process_eat(philo);
-		if (is_philo_full(philo))
-			break ;
-		safe_printf(philo, SLEEP);
-		susleep(philo->params->tt_sleep, philo->params);
-		safe_printf(philo, THINK); // placeholder, may need better logic like in mandatory
-	} */
-	sem_close(philo->params->sem_printf);
-	sem_close(philo->params->sem_forks);
-	exit(0);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-void	*philone(void *arg)
-{
-	t_philo	*philo;
-
-	philo = (t_philo *)arg;
-	philo->params->start_time = get_current_time();
-	safe_printf(philo, LEFT_FORK);
-	susleep(philo->params->tt_die, philo->params);
-	safe_printf(philo, DIED);
-	return (NULL);
-}
-
-void	*routine(void *arg)
-{
-	t_philo			*philo;
-
-	philo = (t_philo *)arg;
-	sync_threads(philo);
-	// set last meal time to current time here? it's kinda handled
-	// pthread_mutex_lock(&philo->params->gen_lock);
-	philo->params->threads_running += 1;
-	// pthread_mutex_unlock(&philo->params->gen_lock);
-	routine_offset(philo);
-	while (is_dinner_over(philo->params) == false)
-	{
-		routine_eat(philo);
-		if (is_philo_full(philo))
-			break ;
-		safe_printf(philo, SLEEP);
-		susleep(philo->params->tt_sleep, philo->params);
-		routine_think(philo, true);
-	}
-	return (NULL);
-}
-
-void	routine_eat(t_philo *philo)
-{
-	// pthread_mutex_lock(philo->left_fork);
-	safe_printf(philo, LEFT_FORK);
-	// pthread_mutex_lock(philo->right_fork);
-	safe_printf(philo, RIGHT_FORK);
-	// pthread_mutex_lock(&philo->philo_lock);
-	philo->last_meal = get_current_time();
-	// pthread_mutex_unlock(&philo->philo_lock);
-	philo->times_eaten += 1;
-	safe_printf(philo, EAT);
-	susleep(philo->params->tt_eat, philo->params);
-	if (philo->times_eaten == philo->params->must_eat_count)
-	{
-		// pthread_mutex_lock(&philo->philo_lock);
-		philo->full = true;
-		// pthread_mutex_unlock(&philo->philo_lock);
-	}
-	// pthread_mutex_unlock(philo->left_fork);
-	// pthread_mutex_unlock(philo->right_fork);
-}
-
-void	routine_think(t_philo *philo, bool print_flag)
+void	process_think(t_philo *philo, bool print_flag)
 {
 	long	eat;
 	long	sleep;
@@ -157,7 +70,7 @@ void	routine_think(t_philo *philo, bool print_flag)
 	susleep(think * 0.5, philo->params);
 }
 
-void	routine_offset(t_philo *philo)
+void	process_offset(t_philo *philo)
 {
 	if (philo->params->philos_count % 2 == 0)
 	{
@@ -167,6 +80,65 @@ void	routine_offset(t_philo *philo)
 	else
 	{
 		if (philo->id % 2 != 0)
-			routine_think(philo, false); // true if i want to start with odd ids thinking or doing nothing
+			process_think(philo, false);
 	}
 }
+
+void	process_routine(t_philo *philo)
+{
+	sem_wait(philo->params->sem_start);
+	philo->params->start_time = get_current_time(); // problem with this? maybe wrap in sems
+	// syncing? threads running? self monitoring thread? routine offset?
+	process_offset(philo);
+	while (is_dinner_over(philo->params) == false) // sem inside this
+	{
+		process_eat(philo); // sem inside this
+		if (is_philo_full(philo)) // sem inside this
+			break ;
+		safe_printf(philo, SLEEP);
+		susleep(philo->params->tt_sleep, philo->params);
+		process_think(philo, true);
+	}
+	sem_close(philo->params->sem_printf);
+	sem_close(philo->params->sem_forks);
+	sem_close(philo->params->sem_start);
+	sem_close(philo->params->sem_global);
+	sem_close(philo->sem_philo);
+	exit(0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// void	*routine(void *arg)
+// {
+// 	t_philo			*philo;
+
+// 	philo = (t_philo *)arg;
+// 	sync_threads(philo);
+// 	// set last meal time to current time here? it's kinda handled
+// 	// pthread_mutex_lock(&philo->params->gen_lock);
+// 	philo->params->threads_running += 1;
+// 	// pthread_mutex_unlock(&philo->params->gen_lock);
+// 	routine_offset(philo);
+// 	while (is_dinner_over(philo->params) == false)
+// 	{
+// 		routine_eat(philo);
+// 		if (is_philo_full(philo))
+// 			break ;
+// 		safe_printf(philo, SLEEP);
+// 		susleep(philo->params->tt_sleep, philo->params);
+// 		routine_think(philo, true);
+// 	}
+// 	return (NULL);
+// }
+

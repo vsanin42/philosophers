@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/29 21:15:52 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 18:52:13 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,13 @@
 
 bool	is_philo_full(t_philo *philo)
 {
-	// pthread_mutex_lock(&philo->philo_lock);
+	sem_wait(philo->sem_philo);
 	if (philo->full == true)
 	{
-		// pthread_mutex_unlock(&philo->philo_lock);
+		sem_post(philo->sem_philo);
 		return (true);
 	}
-	// pthread_mutex_unlock(&philo->philo_lock);
+	sem_post(philo->sem_philo);
 	return (false);
 }
 
@@ -86,9 +86,10 @@ int	start_dinner(t_philo *philos, t_params *params)
 			// thread creation and sync?
 			process_routine(&philos[i]);
 		}
-		// else needed ?
 		i++;
 	}
+	while (i-- > 0)
+		sem_post(params->sem_start);
 	return (wait_for_children(params));
 }
 
@@ -130,12 +131,12 @@ int	main(int argc, char **argv)
 	init_philos(philos, &params);
 	if (start_dinner(philos, &params) == ERROR)
 	{
-		clean_semaphores(&params);
+		clean_semaphores(philos, &params);
 		return (ERROR);
 	}
 	// if (join_threads(philos) == ERROR)	// if threads are used, join in the end
 	// 	return (ERROR);
-	if (clean_semaphores(&params) == ERROR)
+	if (clean_semaphores(philos, &params) == ERROR)
 		return (ERROR);
 	return (0);
 }

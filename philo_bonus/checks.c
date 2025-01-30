@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 17:53:38 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/28 15:15:06 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 18:54:40 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,13 +73,13 @@ int	secondary_init_checks(t_params *params)
 // TODO: these need to be managed without mutexes
 bool	is_dinner_over(t_params *params)
 {
-	// pthread_mutex_lock(&params->gen_lock);
+	sem_wait(params->sem_global);
 	if (params->dinner_over == true)
 	{
-		// pthread_mutex_unlock(&params->gen_lock);
+		sem_post(params->sem_global);
 		return (true);
 	}
-	// pthread_mutex_unlock(&params->gen_lock);
+	sem_post(params->sem_global);
 	return (false);
 }
 
@@ -87,23 +87,23 @@ bool	is_philo_dead(t_philo *philo)
 {
 	long	current_time;
 
-	// pthread_mutex_lock(&philo->philo_lock);
+	sem_wait(philo->sem_philo);
 	if (philo->full == true)
 	{
-		// pthread_mutex_unlock(&philo->philo_lock);
+		sem_post(philo->sem_philo);
 		return (false);
 	}
-	// pthread_mutex_unlock(&philo->philo_lock);
+	sem_post(philo->sem_philo);
 	current_time = get_current_time();
-	// pthread_mutex_lock(&philo->philo_lock);
+	sem_wait(philo->sem_philo);
 	if (((philo->last_meal > 0) // might need a value getter if this proves to be too long
 		&& (current_time - philo->last_meal > philo->params->tt_die))
 		|| ((philo->last_meal == 0)
 		&& (current_time - philo->params->start_time > philo->params->tt_die)))
 	{
-		// pthread_mutex_unlock(&philo->philo_lock);
+		sem_post(philo->sem_philo);
 		return (true);
 	}
-	// pthread_mutex_unlock(&philo->philo_lock);
+	sem_post(philo->sem_philo);
 	return (false);
 }
