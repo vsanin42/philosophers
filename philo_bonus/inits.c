@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/30 18:55:57 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 23:05:50 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,10 @@ int	init_semaphores(t_params *params)
 	params->sem_printf = sem_open("/printf", O_CREAT, 0666, 1);
 	params->sem_start = sem_open("/start", O_CREAT, 0666, 0);
 	params->sem_global = sem_open("/global", O_CREAT, 0666, 1);
+	params->sem_shutdown = sem_open("/shutdown", O_CREAT, 0666, 0);
 	if (params->sem_forks == SEM_FAILED || params->sem_printf == SEM_FAILED
-		|| params->sem_start == SEM_FAILED || params->sem_global == SEM_FAILED)
+		|| params->sem_start == SEM_FAILED || params->sem_global == SEM_FAILED
+		|| params->sem_shutdown == SEM_FAILED)
 	{
 		if (params->sem_forks != SEM_FAILED)
 			sem_unlink("/forks");
@@ -27,6 +29,8 @@ int	init_semaphores(t_params *params)
 			sem_unlink("/printf");
 		if (params->sem_start != SEM_FAILED)
 			sem_unlink("/start");
+		if (params->sem_global != SEM_FAILED)
+			sem_unlink("/global");
 		return (error_msg("Error: failed initializing a semaphore."), ERROR);
 	}
 	return (0);

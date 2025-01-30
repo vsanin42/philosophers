@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/30 18:52:13 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 00:09:49 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,15 +41,25 @@ void	*monitor(void *arg)
 		{
 			if (is_philo_dead(philo + i) == true)
 			{
-				// pthread_mutex_lock(&philo->params->gen_lock);	// ?
+				sem_wait(philo->params->sem_global);	// ?
 				philo->params->dinner_over = true;
-				// pthread_mutex_unlock(&philo->params->gen_lock);
+				sem_post(philo->params->sem_global);
 				safe_printf(philo + i, DIED);
 				// break to avoid double died messages?
 			}
 			i++;
 		}
 	}
+	return (NULL);
+}
+
+void	*shutdown(void *arg)
+{
+	t_philo	*philo;
+
+	philo = (t_philo *)arg;
+	sem_wait(philo->params->sem_shutdown);
+	// shutdown process
 	return (NULL);
 }
 
@@ -69,6 +79,15 @@ int	wait_for_children(t_params *params)
 	return (0);
 }
 
+int	create_philo_threads(t_philo *philo)
+{
+	if (pthread_create(&philo->th_monitor, NULL, &monitor, philo) != 0)
+		return (error_msg("Error creating monitor thread."), ERROR);
+	if (pthread_create(&philo->th_shutdown, NULL, &shutdown, philo) != 0)
+		return (error_msg("Error creating shutdown thread."), ERROR);
+	return (0);
+}
+
 int	start_dinner(t_philo *philos, t_params *params)
 {
 	int	i;
@@ -76,6 +95,7 @@ int	start_dinner(t_philo *philos, t_params *params)
 	i = 0;
 	if (params->philos_count == 1)
 		return (process_single(philos));
+	params->start_time = get_current_time(); // better be here and inited once
 	while (i < params->philos_count)
 	{
 		params->pids[i] = fork();
@@ -83,8 +103,8 @@ int	start_dinner(t_philo *philos, t_params *params)
 			return (error_msg("Error: forking failed."), ERROR);
 		if (params->pids[i] == 0)
 		{
-			// thread creation and sync?
-			process_routine(&philos[i]);
+			create_philo_threads(&philos[i]);
+			process_routine(&philos[i]); // if leaks, pass original philos to traverse and close all sems
 		}
 		i++;
 	}
@@ -125,6 +145,12 @@ int	main(int argc, char **argv)
 	t_params	params;
 	t_philo		philos[MAX_PHILOS];
 	pid_t		pids[MAX_PHILOS];
+	
+	sem_unlink("/forks");
+	sem_unlink("/printf");
+	sem_unlink("/start");
+	sem_unlink("/global");
+	sem_unlink("/shutdown");
 	
 	if (check_args(argc, argv) == ERROR || init_params(&params, argv, pids))
 		return (ERROR);

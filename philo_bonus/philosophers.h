@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/30 18:18:27 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 23:04:35 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,12 +51,14 @@ typedef struct s_params
 	sem_t			*sem_printf;
 	sem_t			*sem_start;
 	sem_t			*sem_global;
+	sem_t			*sem_shutdown;
 }		t_params;
 
 typedef struct s_philo
 {
 	int				id;
-	pthread_t		thread;
+	pthread_t		th_monitor;
+	pthread_t		th_shutdown;
 	t_params		*params;
 	bool			full;
 	int				times_eaten;
@@ -108,13 +110,6 @@ void	process_eat(t_philo *philo);
 void	process_routine(t_philo *philo);
 void	process_offset(t_philo *philo);
 void	process_think(t_philo *philo, bool print_flag);
-
-
-
-void	*routine(void *arg);
-void	routine_eat(t_philo *philo);
-void	routine_think(t_philo *philo, bool print_flag);
-void	routine_offset(t_philo *philo);
 
 /* cleaning.c */
 int		clean_param_sems(t_params *params);

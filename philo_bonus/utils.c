@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/29 15:45:20 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 23:49:06 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,18 +71,17 @@ void	safe_printf(t_philo *philo, t_state state)
 {
 	long	stamp;
 
-	stamp = get_timestamp(philo->params->start_time);
 	if (is_dinner_over(philo->params) == true && state != DIED) // thread safe?
 		return ;
 	sem_wait(philo->params->sem_printf);
-	if (state == EAT && !is_dinner_over(philo->params))
+	stamp = get_timestamp(philo->params->start_time);
+	if (state == EAT)
 		printf("%ld\t"GREEN"%d is eating"RESET"\n", stamp, philo->id);
-	else if (state == SLEEP && !is_dinner_over(philo->params))
+	else if (state == SLEEP)
 		printf("%ld\t"GREEN"%d "RESET"is sleeping\n", stamp, philo->id);
-	else if (state == THINK && !is_dinner_over(philo->params))
+	else if (state == THINK)
 		printf("%ld\t"GREEN"%d "RESET"is thinking\n", stamp, philo->id);
-	else if ((state == LEFT_FORK || state == RIGHT_FORK)
-		&& !is_dinner_over(philo->params))
+	else if (state == LEFT_FORK || state == RIGHT_FORK)
 		printf("%ld\t"GREEN"%d "RESET"has taken a fork\n", stamp, philo->id);
 	else if (state == DIED)
 		printf("%ld\t"RED"%d died\n"RESET, stamp, philo->id);

@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:17:43 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/30 18:14:52 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/30 23:07:49 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,10 @@ int	clean_param_sems(t_params *params)
 		return (error_msg("Error: failed to close global."), ERROR);
 	if (sem_unlink("/global") == -1)
 		return (error_msg("Error: failed to unlink global."), ERROR);
+	if (sem_close(params->sem_shutdown) == -1)
+		return (error_msg("Error: failed to close shutdown."), ERROR);
+	if (sem_unlink("/shutdown") == -1)
+		return (error_msg("Error: failed to unlink shutdown."), ERROR);
 	return (0);
 }
 
@@ -37,14 +41,15 @@ int	clean_philo_sems(t_philo *philos)
 {
 	int		i;
 	char	sem_name[11];
+
 	i = 0;
 	while (i < philos->params->philos_count)
 	{
 		generate_sem_name(sem_name, philos[i].id);
 		if (sem_close(philos[i].sem_philo) == -1)
-			return (error_msg("Error: failed to close global."), ERROR);
+			return (error_msg("Error: failed to close philo sem."), ERROR);
 		if (sem_unlink(sem_name) == -1)
-			return (error_msg("Error: failed to unlink global."), ERROR);
+			return (error_msg("Error: failed to unlink philo sem."), ERROR);
 		i++;
 	}
 	return (0);
@@ -66,7 +71,7 @@ int	join_threads(t_philo *philos)
 	i = 0;
 	while (i < philos->params->philos_count)
 	{
-		if (pthread_join(philos[i].thread, NULL) != 0)
+		if (pthread_join(philos[i].th_monitor, NULL) != 0) // todo idk
 			return (error_msg("Error: joining threads failed."), ERROR);
 		i++;
 	}

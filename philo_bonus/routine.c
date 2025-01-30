@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/30 18:54:17 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 00:10:04 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,13 +87,13 @@ void	process_offset(t_philo *philo)
 void	process_routine(t_philo *philo)
 {
 	sem_wait(philo->params->sem_start);
-	philo->params->start_time = get_current_time(); // problem with this? maybe wrap in sems
 	// syncing? threads running? self monitoring thread? routine offset?
+	// printf("Philo %d start time: %ld\n", philo->id, philo->params->start_time);
 	process_offset(philo);
-	while (is_dinner_over(philo->params) == false) // sem inside this
+	while (is_dinner_over(philo->params) == false)
 	{
-		process_eat(philo); // sem inside this
-		if (is_philo_full(philo)) // sem inside this
+		process_eat(philo);
+		if (is_philo_full(philo))
 			break ;
 		safe_printf(philo, SLEEP);
 		susleep(philo->params->tt_sleep, philo->params);
@@ -103,7 +103,11 @@ void	process_routine(t_philo *philo)
 	sem_close(philo->params->sem_forks);
 	sem_close(philo->params->sem_start);
 	sem_close(philo->params->sem_global);
+	sem_close(philo->params->sem_shutdown);
 	sem_close(philo->sem_philo);
+	// if leaks, add close_philo_sems or its variation here + pass orig philos * here
+	pthread_join(philo->th_monitor, NULL);
+	pthread_join(philo->th_shutdown, NULL);
 	exit(0);
 }
 
