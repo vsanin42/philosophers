@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:17:43 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 15:49:50 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 22:10:10 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ int	close_param_sems(t_params *params)
 		return (error_msg("Error: failed to close global."), ERROR);
 	if (sem_close(params->sem_shutdown) == -1)
 		return (error_msg("Error: failed to close shutdown."), ERROR);
-	if (sem_close(params->sem_term) == -1)
-		return (error_msg("Error: failed to close term."), ERROR);
+	if (sem_close(params->sem_full) == -1)
+		return (error_msg("Error: failed to close full."), ERROR);
 	return (0);
 }
 
@@ -41,8 +41,8 @@ int	unlink_param_sems(void)
 		return (error_msg("Error: failed to unlink global."), ERROR);
 	if (sem_unlink("/shutdown") == -1)
 		return (error_msg("Error: failed to unlink shutdown."), ERROR);
-	if (sem_unlink("/term") == -1)
-		return (error_msg("Error: failed to unlink term."), ERROR);
+	if (sem_unlink("/full") == -1)
+		return (error_msg("Error: failed to unlink full."), ERROR);
 	return (0);
 }
 
@@ -84,5 +84,5 @@ void	unlink_sems_at_launch(void)
 	sem_unlink("/start");
 	sem_unlink("/global");
 	sem_unlink("/shutdown");
-	sem_unlink("/term");
+	sem_unlink("/full");
 }

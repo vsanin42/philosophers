@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 15:43:29 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 17:19:12 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,6 @@ void	safe_printf(t_philo *philo, t_state state)
 		&& !is_dinner_over(philo->params))
 		printf("%ld\t"GREEN"%d "RESET"has taken a fork\n", stamp, philo->id);
 	else if (state == DIED)
-		printf("%ld\t"RED"%d died\n"RESET, stamp, philo->id);
+		printf("%ld\t"RED"%d died"RESET"\n", stamp, philo->id);
 	pthread_mutex_unlock(&philo->params->printf_lock);
 }

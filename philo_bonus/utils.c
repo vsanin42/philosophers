@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 12:46:21 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 21:57:14 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,23 +67,27 @@ int	ft_atoi(const char *str)
 	return (res * sign);
 }
 
-void	safe_printf(t_philo *philo, t_state state)
+int	safe_printf(t_philo *philo, t_state state)
 {
 	long	stamp;
 
-	if (is_dinner_over(philo->params) == true && state != DIED) // thread safe? keep second cond?
-		return ;
 	sem_wait(philo->params->sem_printf);
+	if (is_dinner_over(philo->params) == true) // thread safe? keep second cond?
+		return (sem_post(philo->params->sem_printf), -1);
 	stamp = get_timestamp(philo->params->start_time);
-	if (state == EAT)
+	if (state == EAT && !is_dinner_over(philo->params))
 		printf("%ld\t"MAG"%d is eating"RESET"\n", stamp, philo->id);
-	else if (state == SLEEP)
+	else if (state == SLEEP && !is_dinner_over(philo->params))
 		printf("%ld\t"MAG"%d "RESET"is sleeping\n", stamp, philo->id);
-	else if (state == THINK)
+	else if (state == THINK && !is_dinner_over(philo->params))
 		printf("%ld\t"MAG"%d "RESET"is thinking\n", stamp, philo->id);
-	else if (state == LEFT_FORK || state == RIGHT_FORK)
+	else if (state == FORK && !is_dinner_over(philo->params))
 		printf("%ld\t"MAG"%d "RESET"has taken a fork\n", stamp, philo->id);
-	else if (state == DIED)
-		printf("%ld\t"RED"%d died\n"RESET, stamp, philo->id);
+	else if (state == DIED && !is_dinner_over(philo->params))
+	{
+		printf("%ld\t"RED"%d died"RESET"\n", stamp, philo->id);
+		post_on_shutdown(philo);
+	}
 	sem_post(philo->params->sem_printf);
+	return (0);
 }

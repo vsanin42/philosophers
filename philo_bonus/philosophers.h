@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 16:41:30 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 22:12:52 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ typedef struct s_params
 	sem_t			*sem_start;
 	sem_t			*sem_global;
 	sem_t			*sem_shutdown;
-	sem_t			*sem_term;
+	sem_t			*sem_full;
 }		t_params;
 
 typedef struct s_philo
@@ -70,8 +70,7 @@ typedef enum e_state
 	EAT,
 	SLEEP,
 	THINK,
-	LEFT_FORK,
-	RIGHT_FORK,
+	FORK,
 	DIED,
 }	t_state;
 
@@ -80,7 +79,7 @@ void	error_msg(char *msg);
 int		ft_isdigit(int c);
 int		ft_strlen(char const *str);
 int		ft_atoi(const char *str);
-void	safe_printf(t_philo *philo, t_state state);
+int		safe_printf(t_philo *philo, t_state state);
 
 /* inits.c */
 int		append_id(char *buffer, int base_len, int id);
@@ -103,7 +102,7 @@ int		susleep(long usec, t_params *params);
 
 /* routine.c */
 int		process_single(t_philo *philo);
-void	process_eat(t_philo *philo);
+int		process_eat(t_philo *philo);
 void	process_routine(t_philo *philo, t_philo *philo_start);
 void	process_offset(t_philo *philo);
 void	process_think(t_philo *philo, bool print_flag);
@@ -119,6 +118,7 @@ void	unlink_sems_at_launch(void);
 void	*shutdown(void *arg);
 void	*monitor_self(void *arg);
 void	process_terminate(t_philo *philo, t_philo *philo_start);
+void	post_on_shutdown(t_philo *philo);
 
 /* main.c */
 int		create_philo_threads(t_philo *philo);

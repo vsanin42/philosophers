@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 16:39:40 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 22:10:31 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ int	process_single(t_philo *philo)
 	if (philo->params->pids[0] == 0)
 	{
 		philo->params->start_time = get_current_time();
-		safe_printf(philo, LEFT_FORK);
+		safe_printf(philo, FORK);
 		susleep(philo->params->tt_die, philo->params);
 		safe_printf(philo, DIED);
 		close_param_sems(philo->params);
@@ -35,17 +35,19 @@ int	process_single(t_philo *philo)
 	return (0);
 }
 
-void	process_eat(t_philo *philo)
+int	process_eat(t_philo *philo)
 {
 	sem_wait(philo->params->sem_forks);
-	safe_printf(philo, LEFT_FORK);
+	safe_printf(philo, FORK);
 	sem_wait(philo->params->sem_forks);
-	safe_printf(philo, RIGHT_FORK);
+	safe_printf(philo, FORK);
 	sem_wait(philo->sem_philo);
 	philo->last_meal = get_current_time();
 	sem_post(philo->sem_philo);
 	philo->times_eaten += 1;
 	// some mechanism to prevent from eating if dead?
+	if (is_philo_dead(philo) == true)
+		return (ERROR);
 	safe_printf(philo, EAT);
 	susleep(philo->params->tt_eat, philo->params);
 	sem_post(philo->params->sem_forks); // bit earlier post on forks
@@ -55,7 +57,9 @@ void	process_eat(t_philo *philo)
 		sem_wait(philo->sem_philo);
 		philo->full = true;
 		sem_post(philo->sem_philo);
+		sem_post(philo->params->sem_full);
 	}
+	return (0);
 }
 
 void	process_think(t_philo *philo, bool print_flag)
@@ -92,12 +96,13 @@ void	process_offset(t_philo *philo)
 
 void	process_routine(t_philo *philo, t_philo *philo_start)
 {
-	sem_wait(philo->params->sem_start);
+	//sem_wait(philo->params->sem_start);
 	create_philo_threads(philo);
 	process_offset(philo);
 	while (is_dinner_over(philo->params) == false)
 	{
-		process_eat(philo);
+		if (process_eat(philo) == ERROR)
+			break ;
 		if (is_philo_full(philo))
 			break ; // if philo
 		safe_printf(philo, SLEEP);

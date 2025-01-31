@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 16:30:05 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 22:22:14 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,22 @@ int	start_dinner(t_philo *philos, t_params *params)
 			process_routine(&philos[i], philos); // if leaks, pass original philos to traverse and close all sems
 		i++;
 	}
-	while (i-- > 0)
-		sem_post(params->sem_start);
+	// while (i-- > 0)
+	// 	sem_post(params->sem_start);
+	return (0);
+}
+
+int	wait_for_full(t_params *params)
+{
+	int	i;
+
+	i = 0;
+	if (params->must_eat_count < 0)
+		return (ERROR);
+	while (i++ < params->philos_count)
+		sem_wait(params->sem_full);
+	while (i-- >= 0)
+		sem_post(params->sem_shutdown);
 	return (0);
 }
 
@@ -86,6 +100,7 @@ int	main(int argc, char **argv)
 	if (start_dinner(philos, &params) == ERROR)
 		return (clean_semaphores(philos, &params, 1));
 	// while (is_dinner_over(&params) == false)
+	wait_for_full(&params);
 	wait_for_children(&params);
 	if (clean_semaphores(philos, &params, 0) == ERROR)
 		return (ERROR);
