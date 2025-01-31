@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/30 23:05:50 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 14:33:37 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,23 +14,19 @@
 
 int	init_semaphores(t_params *params)
 {
-	params->sem_forks = sem_open("/forks", O_CREAT, 0666, params->philos_count);
-	params->sem_printf = sem_open("/printf", O_CREAT, 0666, 1);
-	params->sem_start = sem_open("/start", O_CREAT, 0666, 0);
-	params->sem_global = sem_open("/global", O_CREAT, 0666, 1);
-	params->sem_shutdown = sem_open("/shutdown", O_CREAT, 0666, 0);
+	int	i;
+
+	i = params->philos_count;
+	params->sem_forks = sem_open("/forks", O_CREAT | O_EXCL, 0666, i);
+	params->sem_printf = sem_open("/printf", O_CREAT | O_EXCL, 0666, 1);
+	params->sem_start = sem_open("/start", O_CREAT | O_EXCL, 0666, 0);
+	params->sem_global = sem_open("/global", O_CREAT | O_EXCL, 0666, 1);
+	params->sem_shutdown = sem_open("/shutdown", O_CREAT | O_EXCL, 0666, 0);
+	params->sem_term = sem_open("/term", O_CREAT | O_EXCL, 0666, 0);
 	if (params->sem_forks == SEM_FAILED || params->sem_printf == SEM_FAILED
 		|| params->sem_start == SEM_FAILED || params->sem_global == SEM_FAILED
-		|| params->sem_shutdown == SEM_FAILED)
+		|| params->sem_shutdown == SEM_FAILED || params->sem_term == SEM_FAILED)
 	{
-		if (params->sem_forks != SEM_FAILED)
-			sem_unlink("/forks");
-		if (params->sem_printf != SEM_FAILED)
-			sem_unlink("/printf");
-		if (params->sem_start != SEM_FAILED)
-			sem_unlink("/start");
-		if (params->sem_global != SEM_FAILED)
-			sem_unlink("/global");
 		return (error_msg("Error: failed initializing a semaphore."), ERROR);
 	}
 	return (0);
@@ -48,9 +44,7 @@ int	init_params(t_params *params, char **argv, pid_t *pids)
 		params->must_eat_count = -2;
 	if (secondary_init_checks(params) == ERROR)
 		return (ERROR);
-	params->all_ready = false;
 	params->start_time = 0;
-	params->threads_running = 0;
 	params->dinner_over = false;
 	params->pids = pids;
 	if (init_semaphores(params) == ERROR)
@@ -111,7 +105,7 @@ int	init_philos(t_philo *philos, t_params *params)
 		philos[i].params = params;
 		philos[i].times_eaten = 0;
 		philos[i].full = false;
-		philos[i].last_meal = 0; // maybe bad but better initialize it for monitor checks
+		philos[i].last_meal = 0;
 		generate_sem_name(sem_name, philos[i].id);
 		philos[i].sem_philo = sem_open(sem_name, O_CREAT, 0666, 1);
 		if (philos[i].sem_philo == SEM_FAILED)
