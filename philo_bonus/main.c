@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 22:22:14 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 00:03:12 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,15 +37,6 @@ int	wait_for_children(t_params *params)
 			return (error_msg("Error: failed in waitpid."), ERROR);
 		i++;
 	}
-	return (0);
-}
-
-int	create_philo_threads(t_philo *philo)
-{
-	if (pthread_create(&philo->th_monitor_self, NULL, &monitor_self, philo) != 0)
-		return (error_msg("Error creating monitor_self thread."), ERROR);
-	if (pthread_create(&philo->th_shutdown, NULL, &shutdown, philo) != 0)
-		return (error_msg("Error creating shutdown thread."), ERROR);
 	return (0);
 }
 
@@ -90,16 +81,13 @@ int	main(int argc, char **argv)
 	t_params	params;
 	t_philo		philos[MAX_PHILOS];
 	pid_t		pids[MAX_PHILOS];
-	// int			i;
 
-	// i = 0;
 	unlink_sems_at_launch();
 	if (check_args(argc, argv) == ERROR || init_params(&params, argv, pids))
 		return (ERROR);
 	init_philos(philos, &params);
 	if (start_dinner(philos, &params) == ERROR)
 		return (clean_semaphores(philos, &params, 1));
-	// while (is_dinner_over(&params) == false)
 	wait_for_full(&params);
 	wait_for_children(&params);
 	if (clean_semaphores(philos, &params, 0) == ERROR)

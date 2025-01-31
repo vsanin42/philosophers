@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 22:10:31 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 00:03:38 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ int	process_eat(t_philo *philo)
 	philo->last_meal = get_current_time();
 	sem_post(philo->sem_philo);
 	philo->times_eaten += 1;
-	// some mechanism to prevent from eating if dead?
 	if (is_philo_dead(philo) == true)
 		return (ERROR);
 	safe_printf(philo, EAT);

@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:54:35 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 22:20:08 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 00:03:59 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,7 @@
 void	*monitor_self(void *arg)
 {
 	t_philo	*philo;
-	// int		i;
 
-	// i = 0;
 	philo = (t_philo *)arg;
 	while (is_dinner_over(philo->params) == false) // while 1 ?
 	{
@@ -28,20 +26,15 @@ void	*monitor_self(void *arg)
 			return (NULL);
 		if (is_philo_dead(philo) == true)
 		{
-			// post to some sem to indicate a death?
 			safe_printf(philo, DIED);
-			// while (i++ < philo->params->philos_count)
-			// 	sem_post(philo->params->sem_shutdown);
-			sem_wait(philo->params->sem_global);	// ?
+			sem_wait(philo->params->sem_global); // move this inside post to shutdown?
 			philo->params->dinner_over = true;
 			sem_post(philo->params->sem_global);
-			// break to avoid double died messages?
 		}
 	}
 	return (NULL);
 }
 
-//
 void	*shutdown(void *arg)
 {
 	t_philo	*philo;
@@ -76,4 +69,13 @@ void	process_terminate(t_philo *philo, t_philo *philo_start)
 	while (++i < philo->params->philos_count)
 		sem_close(philo_start[i].sem_philo);
 	exit(0);
+}
+
+int	create_philo_threads(t_philo *philo)
+{
+	if (pthread_create(&philo->th_monitor_self, NULL, &monitor_self, philo) != 0)
+		return (error_msg("Error creating monitor_self thread."), ERROR);
+	if (pthread_create(&philo->th_shutdown, NULL, &shutdown, philo) != 0)
+		return (error_msg("Error creating shutdown thread."), ERROR);
+	return (0);
 }

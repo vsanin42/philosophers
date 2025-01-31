@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 22:12:52 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/01/31 23:14:43 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,10 +119,11 @@ void	*shutdown(void *arg);
 void	*monitor_self(void *arg);
 void	process_terminate(t_philo *philo, t_philo *philo_start);
 void	post_on_shutdown(t_philo *philo);
+int		create_philo_threads(t_philo *philo);
 
 /* main.c */
-int		create_philo_threads(t_philo *philo);
 bool	is_philo_full(t_philo *philo);
+int		wait_for_full(t_params *params);
 int		wait_for_children(t_params *params);
 int		start_dinner(t_philo *philos, t_params *params);
 

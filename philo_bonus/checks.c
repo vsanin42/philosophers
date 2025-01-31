@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 17:53:38 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/30 18:54:40 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 00:05:39 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,6 @@ int	check_args(int argc, char **argv)
 
 int	secondary_init_checks(t_params *params)
 {
-	// printf("ttdie: %ld\n", params->tt_die);
-	// printf("tteat: %ld\n", params->tt_eat);
-	// printf("ttsleep: %ld\n", params->tt_sleep);
 	if (params->philos_count == -1 || params->tt_die == -1000
 		|| params->tt_eat == -1000 || params->tt_sleep == -1000)
 		return (error_msg("Error: integer overflow occurred."), ERROR);
@@ -70,7 +67,6 @@ int	secondary_init_checks(t_params *params)
 	return (0);
 }
 
-// TODO: these need to be managed without mutexes
 bool	is_dinner_over(t_params *params)
 {
 	sem_wait(params->sem_global);
