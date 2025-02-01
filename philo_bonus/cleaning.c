@@ -6,12 +6,13 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:17:43 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 22:10:10 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 18:27:48 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// closing semaphores inside params struct
 int	close_param_sems(t_params *params)
 {
 	if (sem_close(params->sem_forks) == -1)
@@ -29,6 +30,7 @@ int	close_param_sems(t_params *params)
 	return (0);
 }
 
+// unlinking closed semaphores inside params struct.
 int	unlink_param_sems(void)
 {
 	if (sem_unlink("/forks") == -1)
@@ -46,6 +48,7 @@ int	unlink_param_sems(void)
 	return (0);
 }
 
+// generating semaphore name for each philo's id, closing and unlinking it.
 int	clean_philo_sems(t_philo *philos)
 {
 	int		i;
@@ -64,6 +67,11 @@ int	clean_philo_sems(t_philo *philos)
 	return (0);
 }
 
+// cleanup of semaphores.
+// 1. closing semaphores in params struct.
+// 2. unlinking semaphores in params struct.
+// 3. cleaning philos semaphores.
+// status in case a specific return value is needed.
 int	clean_semaphores(t_philo *philos, t_params *params, int status)
 {
 	if (close_param_sems(params) == ERROR)
@@ -77,12 +85,26 @@ int	clean_semaphores(t_philo *philos, t_params *params, int status)
 	return (0);
 }
 
+// unlink semaphores at launch to prevent errors if the previous
+// execution ended with a signal and semaphores didn't get unlinked.
+// unlinks all possibly created semaphores in philosopher structs
+// by generating all possible names.
 void	unlink_sems_at_launch(void)
 {
+	int		i;
+	char	sem_name[11];
+
+	i = 1;
 	sem_unlink("/forks");
 	sem_unlink("/printf");
 	sem_unlink("/start");
 	sem_unlink("/global");
 	sem_unlink("/shutdown");
 	sem_unlink("/full");
+	while (i <= 200)
+	{
+		generate_sem_name(sem_name, i);
+		sem_unlink(sem_name);
+		i++;
+	}
 }

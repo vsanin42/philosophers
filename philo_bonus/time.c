@@ -6,12 +6,13 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 22:56:46 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 12:02:57 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 17:57:44 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// gets current time from timeval struct in microseconds.
 long	get_current_time(void)
 {
 	struct timeval	time;
@@ -20,7 +21,8 @@ long	get_current_time(void)
 	return (time.tv_sec * 1000000 + time.tv_usec);
 }
 
-// in ms
+// gets the current timestamp: elapsed time from start time and current time.
+// calculated in microseconds and converted to milliseconds for the timestamp.
 long	get_timestamp(long start)
 {
 	struct timeval	current;
@@ -49,9 +51,9 @@ long	get_timestamp(long start)
 // 	return (0);
 // }
 
-// for now ok, still causes delays despite all.
-// maybe sleep for all time but the last ms. idk
-// extremely cpu dependent, test on school pc
+// modified usleep function to add precision to sleep durations.
+// while elapsed time is less than needed sleep time, usleep for tiny intervals.
+// if dinner_over bool becomes true, break to avoid oversleeping.
 int	susleep(long usec, t_params *params)
 {
 	long			start;
@@ -89,3 +91,27 @@ int	susleep(long usec, t_params *params)
 // 	}
 // 	return (0);
 // }
+
+// posts philos_count time on the shutdown semaphore.
+// sleeps 10 ms to allow all shutdown threads to wake up.
+void	post_on_shutdown(t_philo *philo)
+{
+	int	i;
+
+	i = 0;
+	while (i++ < philo->params->philos_count)
+		sem_post(philo->params->sem_shutdown);
+	usleep(10000); // usleep !
+}
+
+// posts philos_count time on the full semaphore.
+// sleeps 10 ms to allow all posts to reach.
+void	post_on_full(t_philo *philo)
+{
+	int	i;
+
+	i = 0;
+	while (i++ < philo->params->philos_count)
+		sem_post(philo->params->sem_full);
+	usleep(10000); // usleep !
+}

@@ -6,12 +6,27 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 22:10:25 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 22:09:29 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// initialize common semaphores used by all child processes.
+// forks: main semaphore keeping track of available forks.
+// printf: binary semaphore protecting the printing function.
+// start: synchronization semaphore to make sure processes start at once.
+// currently not active. !!!
+// global: general semaphore used for checking stopping conditions.
+// shutdown: semaphore for communicating to everyone it's time to shutdown.
+// 1. shutdown thread of each process is waiting for resource to be posted.
+// 2. as soon as someone dies, philos_count resources are posted to it.
+// 3. shutdown thread sets dinner_over bool to true to terminate the process.
+// without shutdown the process wouldn't know when to terminate if someone died.
+// full: every full philo posts to it. once philos_count philos have posted,
+// the checking loop breaks and resources are posted on shutdown to terminate.
+// without signalling fullness the processes can't terminate
+// because the shutdown thread won't return and can't be joined.
 int	init_semaphores(t_params *params)
 {
 	int	i;
@@ -19,7 +34,7 @@ int	init_semaphores(t_params *params)
 	i = params->philos_count;
 	params->sem_forks = sem_open("/forks", O_CREAT | O_EXCL, 0666, i);
 	params->sem_printf = sem_open("/printf", O_CREAT | O_EXCL, 0666, 1);
-	params->sem_start = sem_open("/start", O_CREAT | O_EXCL, 0666, 0);
+	params->sem_start = sem_open("/start", O_CREAT | O_EXCL, 0666, 0); // test with/without. if worse then delete
 	params->sem_global = sem_open("/global", O_CREAT | O_EXCL, 0666, 1);
 	params->sem_shutdown = sem_open("/shutdown", O_CREAT | O_EXCL, 0666, 0);
 	params->sem_full = sem_open("/full", O_CREAT | O_EXCL, 0666, 0);
@@ -32,6 +47,11 @@ int	init_semaphores(t_params *params)
 	return (0);
 }
 
+// initialize parameters of the dinner and store them in a shared params struct.
+// first 4 parameters are input-based. times are converted to microseconds.
+// if the last argument doesn't exist, set must_eat_count to negative value
+// to be able to know if fullness should be actively monitored.
+// perform some additional checks not done in the checks.c file.
 int	init_params(t_params *params, char **argv, pid_t *pids)
 {
 	params->philos_count = ft_atoi(argv[1]);
@@ -52,6 +72,7 @@ int	init_params(t_params *params, char **argv, pid_t *pids)
 	return (0);
 }
 
+// convert philo's id into chars and write them to the end of the buffer
 int	append_id(char *buffer, int base_len, int id)
 {
 	char	temp[4];
@@ -74,8 +95,9 @@ int	append_id(char *buffer, int base_len, int id)
 	return (0);
 }
 
+// overwrite buffer with base string + append an id to create a unique sem_name
 int	generate_sem_name(char *buffer, int id)
-{	
+{
 	char	*base;
 	int		base_len;
 	int		i;
@@ -90,9 +112,13 @@ int	generate_sem_name(char *buffer, int id)
 	}
 	buffer[i] = '\0';
 	append_id(buffer, i, id);
-	return (0); 
+	return (0);
 }
 
+// initialize the array of philos.
+// each philo gets its own semaphore that acts like a mutex.
+// generate_sem_name() creates a semaphore name for each sem_open call
+// based on philo's id.
 int	init_philos(t_philo *philos, t_params *params)
 {
 	int		i;
@@ -107,7 +133,7 @@ int	init_philos(t_philo *philos, t_params *params)
 		philos[i].full = false;
 		philos[i].last_meal = 0;
 		generate_sem_name(sem_name, philos[i].id);
-		philos[i].sem_philo = sem_open(sem_name, O_CREAT, 0666, 1);
+		philos[i].sem_philo = sem_open(sem_name, O_CREAT | O_EXCL, 0666, 1);
 		if (philos[i].sem_philo == SEM_FAILED)
 			return (error_msg("Error: failed opening philo semaphore."), ERROR);
 		i++;

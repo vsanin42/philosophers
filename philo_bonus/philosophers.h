@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 23:14:43 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 18:20:20 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,8 @@ bool	is_philo_dead(t_philo *philo);
 long	get_current_time(void);
 long	get_timestamp(long start);
 int		susleep(long usec, t_params *params);
+void	post_on_shutdown(t_philo *philo);
+void	post_on_full(t_philo *philo);
 
 /* routine.c */
 int		process_single(t_philo *philo);
@@ -118,7 +120,6 @@ void	unlink_sems_at_launch(void);
 void	*shutdown(void *arg);
 void	*monitor_self(void *arg);
 void	process_terminate(t_philo *philo, t_philo *philo_start);
-void	post_on_shutdown(t_philo *philo);
 int		create_philo_threads(t_philo *philo);
 
 /* main.c */

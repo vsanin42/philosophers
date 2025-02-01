@@ -6,12 +6,13 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 00:03:12 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 21:56:14 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// simple check of the full bool.
 bool	is_philo_full(t_philo *philo)
 {
 	sem_wait(philo->sem_philo);
@@ -24,6 +25,7 @@ bool	is_philo_full(t_philo *philo)
 	return (false);
 }
 
+// waits for children to terminate.
 int	wait_for_children(t_params *params)
 {
 	int	status;
@@ -40,6 +42,10 @@ int	wait_for_children(t_params *params)
 	return (0);
 }
 
+// start of the dinner simulation.
+// special case for one philosopher.
+// set start time before forking to make sure it's the same everywhere.
+// fork processes, let child processes start their routine. 
 int	start_dinner(t_philo *philos, t_params *params)
 {
 	int	i;
@@ -54,7 +60,7 @@ int	start_dinner(t_philo *philos, t_params *params)
 		if (params->pids[i] == -1)
 			return (error_msg("Error: forking failed."), ERROR);
 		if (params->pids[i] == 0)
-			process_routine(&philos[i], philos); // if leaks, pass original philos to traverse and close all sems
+			process_routine(&philos[i], philos);
 		i++;
 	}
 	// while (i-- > 0)
@@ -62,6 +68,9 @@ int	start_dinner(t_philo *philos, t_params *params)
 	return (0);
 }
 
+// waits for all philos to eat enough times.
+// once everyone has eaten, signal termination to everyone.
+// dying philosophers also post to sem_full to make sure this function exits.
 int	wait_for_full(t_params *params)
 {
 	int	i;
@@ -76,6 +85,15 @@ int	wait_for_full(t_params *params)
 	return (0);
 }
 
+// main. philos and pids arrays are on stack, therefore no malloc was used
+// aside from calls in sem_open().
+// 1. unlink semaphores at launch to prevent errors.
+// 2. check arguments, initialize parameters and philosopher structs.
+// 3. perform the dinner simulation.
+// 4. if must_eat_count was specified, wait for all philos to get full
+// 4.1. if specified, but someone died, they also post to full semaphore.
+// 5. if not specified, wait for termination of philos in case of death.
+// 6. after all processes exit, clean semaphores and return.
 int	main(int argc, char **argv)
 {
 	t_params	params;
