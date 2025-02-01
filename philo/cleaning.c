@@ -6,12 +6,13 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:17:43 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 17:24:56 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 22:27:20 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// main clean function that destroys all mutexes and frees allocated memory.
 void	big_clean(t_philo *philos, pthread_mutex_t *forks, t_params *params)
 {
 	destroy_forks(forks, params, -1);
@@ -20,6 +21,10 @@ void	big_clean(t_philo *philos, pthread_mutex_t *forks, t_params *params)
 	free(forks);
 }
 
+// destroy mutexes representing all forks, along with shared mutexes
+// like printf and general mutexes.
+// stop index is set to a number to a rollback destruction
+// if an error occurred at init. it's -1 in case of a regular call.
 void	destroy_forks(pthread_mutex_t *forks, t_params *params, int stop_index)
 {
 	int	i;
@@ -40,6 +45,9 @@ void	destroy_forks(pthread_mutex_t *forks, t_params *params, int stop_index)
 	pthread_mutex_destroy(&params->gen_lock);
 }
 
+// destroy all "personal" mutexes belonging to threads.
+// stop index is set to a number to a rollback destruction
+// if an error occurred at init. it's -1 in case of a regular call.
 void	destroy_philo_locks(t_philo *philo, int stop_index)
 {
 	int	i;
@@ -58,6 +66,11 @@ void	destroy_philo_locks(t_philo *philo, int stop_index)
 	}
 }
 
+// join all threads by traversing the philos array.
+// once all the threads have joined, the dinner_over bool can be changed back.
+// that allows the monitor thread to return and be joined.
+// it's done only if there are more than 1 threads.
+// in case of 1 thread a monitor isn't created.
 int	join_threads(t_philo *philos)
 {
 	int	i;
@@ -80,6 +93,7 @@ int	join_threads(t_philo *philos)
 	return (0);
 }
 
+// allocate both philos and forks.
 int	alloc_p_f(t_philo **philos, pthread_mutex_t **forks, t_params *params)
 {
 	*philos = malloc(sizeof(t_philo) * params->philos_count);

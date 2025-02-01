@@ -6,12 +6,13 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 17:26:51 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 23:30:23 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// simple check of the full bool.
 bool	is_philo_full(t_philo *philo)
 {
 	pthread_mutex_lock(&philo->philo_lock);
@@ -24,6 +25,11 @@ bool	is_philo_full(t_philo *philo)
 	return (false);
 }
 
+// monitors all running threads.
+// starts after all threads have incremented the threads_running variable.
+// while the dinner is not over (someone is not full/nobody is dead),
+// check death status of all philos in a loop.
+// if philo is dead, print death message and set dinner_over bool to true.
 void	*monitor(void *arg)
 {
 	int		i;
@@ -33,7 +39,7 @@ void	*monitor(void *arg)
 	philo = (t_philo *)arg;
 	philo_num = philo->params->philos_count;
 	while (sync_monitor(philo) == false)
-		continue ;
+		susleep(100, philo->params);
 	while (is_dinner_over(philo->params) == false)
 	{
 		i = 0;
@@ -41,7 +47,7 @@ void	*monitor(void *arg)
 		{
 			if (is_philo_dead(philo + i) == true)
 			{
-				pthread_mutex_lock(&philo->params->gen_lock);
+				pthread_mutex_lock(&philo->params->gen_lock); // this order is mega weird, think about it.
 				philo->params->dinner_over = true;
 				pthread_mutex_unlock(&philo->params->gen_lock);
 				safe_printf(philo + i, DIED);
@@ -53,14 +59,17 @@ void	*monitor(void *arg)
 	return (NULL);
 }
 
+// start of the dinner simulation.
+// special case for one philosopher.
+// create the necessary number of threads. create monitor thread.
+// set start time. flip the boolean allowing the threads to start.
+// return and wait for threads to join.
 int	start_dinner(t_philo *philos, t_params *params)
 {
 	int	i;
 
 	i = 0;
-	if (params->must_eat_count == 0) // needed at all? maybe it will simply not run
-		return (ERROR);
-	else if (params->philos_count == 1)
+	if (params->philos_count == 1)
 	{
 		if (pthread_create(&philos[0].thread, NULL, &philone, &philos[0]) != 0)
 			return (ERROR);
@@ -81,6 +90,12 @@ int	start_dinner(t_philo *philos, t_params *params)
 	return (0);
 }
 
+// main.
+// 1. check arguments, initialize parameters.
+// 2. allocate forks and philosophers structs, initialize them.
+// 3. perform the dinner simulation.
+// 4. join threads.
+// 5. after all threads are joined, clean everything and return.
 int	main(int argc, char **argv)
 {
 	t_params		params;

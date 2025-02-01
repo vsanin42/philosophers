@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 17:27:08 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 23:23:49 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,24 +39,21 @@ typedef struct s_params
 	int				must_eat_count;
 	int				threads_running;
 	long			start_time;
-	bool			dead_status;
 	bool			all_ready;
 	bool			dinner_over;
 	pthread_mutex_t	printf_lock;
 	pthread_mutex_t	gen_lock;
-	pthread_t		monitor; // join this
+	pthread_t		monitor;
 }		t_params;
 
 typedef struct s_philo
 {
 	int				id;
 	pthread_t		thread;
-	long			start_time; // remove bc it's in params
 	t_params		*params;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
 	pthread_mutex_t	philo_lock;
-	bool			*dead; // ?
 	bool			full;
 	int				times_eaten;
 	long			last_meal;
@@ -103,7 +100,7 @@ bool	sync_monitor(t_philo *philo);
 /* routine.c */
 void	*philone(void *arg);
 void	*routine(void *arg);
-void	routine_eat(t_philo *philo);
+int		routine_eat(t_philo *philo);
 void	routine_think(t_philo *philo, bool print_flag);
 void	routine_offset(t_philo *philo);
 

@@ -6,18 +6,20 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/31 17:19:12 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 22:35:13 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// error output.
 void	error_msg(char *msg)
 {
 	write(STDERR_FILENO, msg, ft_strlen(msg));
 	write(STDERR_FILENO, "\n", 1);
 }
 
+// basic is digit checker.
 int	ft_isdigit(int c)
 {
 	if (c >= '0' && c <= '9')
@@ -27,6 +29,7 @@ int	ft_isdigit(int c)
 	return (0);
 }
 
+// basic strlen function.
 int	ft_strlen(char const *str)
 {
 	int	i;
@@ -39,6 +42,7 @@ int	ft_strlen(char const *str)
 	return (i);
 }
 
+// basic atoi function. if projected number exceeds INT_MAX, return -1.
 int	ft_atoi(const char *str)
 {
 	int	i;
@@ -67,13 +71,18 @@ int	ft_atoi(const char *str)
 	return (res * sign);
 }
 
+// safe printing mechanism.
+// a dedicated printf mutex allows only one print at a time.
+// if dinner is over, return. otherwise get the timestamp.
+// print the appropriate statement based on state enum.
+// check if dinner is over at every step to increase precision.
 void	safe_printf(t_philo *philo, t_state state)
 {
 	long	stamp;
 
 	stamp = get_timestamp(philo->params->start_time);
-	if (is_dinner_over(philo->params) == true && state != DIED) // thread safe?
-		return ;
+	if (is_dinner_over(philo->params) == true && state != DIED) // keep second cond?
+		return ; // consider moving this under the lock? 
 	pthread_mutex_lock(&philo->params->printf_lock);
 	if (state == EAT && !is_dinner_over(philo->params))
 		printf("%ld\t"GREEN"%d is eating"RESET"\n", stamp, philo->id);

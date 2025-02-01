@@ -6,12 +6,15 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/01/25 16:15:47 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 23:10:20 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+// initializing common mutexes stored in params struct.
+// printf: secures the output manipulation.
+// gen_lock: general purpose lock for checks of key states like death/fullness.
 int	init_param_mutexes(t_params *params)
 {
 	if (pthread_mutex_init(&params->printf_lock, NULL) != 0)
@@ -28,6 +31,11 @@ int	init_param_mutexes(t_params *params)
 	return (0);
 }
 
+// initialize parameters of the dinner and store them in a shared params struct.
+// first 4 parameters are input-based. times are converted to microseconds.
+// if the last argument doesn't exist, set must_eat_count to negative value
+// to be able to know if fullness should be actively monitored.
+// perform some additional checks not done in the checks.c file.
 int	init_params(t_params *params, char **argv)
 {
 	params->philos_count = ft_atoi(argv[1]);
@@ -40,7 +48,6 @@ int	init_params(t_params *params, char **argv)
 		params->must_eat_count = -2;
 	if (secondary_init_checks(params) == ERROR)
 		return (ERROR);
-	params->dead_status = false;
 	params->all_ready = false;
 	params->start_time = 0;
 	params->threads_running = 0;
@@ -50,6 +57,10 @@ int	init_params(t_params *params, char **argv)
 	return (0);
 }
 
+// initializing the array of philos.
+// to avoid a deadlock, every other philo grabs forks in reverse.
+// in the worst case scenario, at least one philo will have both forks
+// and will be able to eat. 
 int	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 {
 	phl[i].id = i + 1;
@@ -66,7 +77,6 @@ int	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 	else
 		phl[i].right_fork = NULL;
 	phl[i].params = prm;
-	phl[i].dead = &prm->dead_status;
 	phl[i].times_eaten = 0;
 	phl[i].full = false;
 	phl[i].last_meal = 0; // maybe bad but better initialize it for monitor checks
@@ -78,6 +88,7 @@ int	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 	return (0);
 }
 
+// initializing the array of forks.
 int	init_forks(t_params *params, pthread_mutex_t *forks)
 {
 	int	i;
@@ -95,6 +106,9 @@ int	init_forks(t_params *params, pthread_mutex_t *forks)
 	return (0);
 }
 
+// initialization entry point (after params and allocation).
+// 1. forks are the first since they need to be assigned to philos.
+// 2. philos are the final struct that gets initialized before dinner.
 int	init_p_f(t_philo *philos, pthread_mutex_t *forks, t_params *params)
 {
 	int	i;

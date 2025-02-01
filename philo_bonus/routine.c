@@ -6,7 +6,7 @@
 /*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 18:11:02 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/01 22:49:29 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,12 +61,10 @@ int	process_eat(t_philo *philo)
 	philo->last_meal = get_current_time();
 	sem_post(philo->sem_philo);
 	philo->times_eaten += 1;
-	if (is_philo_dead(philo) == true) // add this to mandatory.
+	if (is_philo_dead(philo) == true)
 		return (ERROR);
 	safe_printf(philo, EAT);
 	susleep(philo->params->tt_eat, philo->params);
-	sem_post(philo->params->sem_forks); // bit earlier post on forks
-	sem_post(philo->params->sem_forks);
 	if (philo->times_eaten == philo->params->must_eat_count)
 	{
 		sem_wait(philo->sem_philo);
@@ -74,6 +72,8 @@ int	process_eat(t_philo *philo)
 		sem_post(philo->sem_philo);
 		sem_post(philo->params->sem_full);
 	}
+	sem_post(philo->params->sem_forks); // bit earlier post on forks
+	sem_post(philo->params->sem_forks); // MOVED THIS BACK DOWN. TEST AGAIN.
 	return (0);
 }
 
