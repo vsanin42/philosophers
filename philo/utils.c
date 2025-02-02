@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 22:35:13 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 13:18:31 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,8 @@ void	safe_printf(t_philo *philo, t_state state)
 	long	stamp;
 
 	stamp = get_timestamp(philo->params->start_time);
-	if (is_dinner_over(philo->params) == true && state != DIED) // keep second cond?
-		return ; // consider moving this under the lock? 
+	if (is_dinner_over(philo->params) == true && state != DIED)
+		return ;
 	pthread_mutex_lock(&philo->params->printf_lock);
 	if (state == EAT && !is_dinner_over(philo->params))
 		printf("%ld\t"GREEN"%d is eating"RESET"\n", stamp, philo->id);

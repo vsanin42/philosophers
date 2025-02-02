@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   inits.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 23:10:20 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 13:04:19 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ int	init_philo(int i, pthread_mutex_t *frk, t_params *prm, t_philo *phl)
 	phl[i].params = prm;
 	phl[i].times_eaten = 0;
 	phl[i].full = false;
-	phl[i].last_meal = 0; // maybe bad but better initialize it for monitor checks
+	phl[i].last_meal = 0;
 	if (pthread_mutex_init(&phl[i].philo_lock, NULL) != 0)
 	{
 		error_msg("Error initializing mutexes.");

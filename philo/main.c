@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 23:30:23 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 13:11:30 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,10 @@ void	*monitor(void *arg)
 		{
 			if (is_philo_dead(philo + i) == true)
 			{
-				pthread_mutex_lock(&philo->params->gen_lock); // this order is mega weird, think about it.
+				pthread_mutex_lock(&philo->params->gen_lock);
 				philo->params->dinner_over = true;
 				pthread_mutex_unlock(&philo->params->gen_lock);
 				safe_printf(philo + i, DIED);
-				// break to avoid double died messages?
 			}
 			i++;
 		}
@@ -73,7 +72,7 @@ int	start_dinner(t_philo *philos, t_params *params)
 	{
 		if (pthread_create(&philos[0].thread, NULL, &philone, &philos[0]) != 0)
 			return (ERROR);
-		return (0); // join threads here? they're joined right after in the caller
+		return (0);
 	}
 	while (i < params->philos_count)
 	{

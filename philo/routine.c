@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 22:59:33 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 13:13:36 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ void	*routine(void *arg)
 
 	philo = (t_philo *)arg;
 	sync_threads(philo);
-	// set last meal time to current time here? it's kinda handled
 	pthread_mutex_lock(&philo->params->gen_lock);
 	philo->params->threads_running += 1;
 	pthread_mutex_unlock(&philo->params->gen_lock);
@@ -89,7 +88,7 @@ int	routine_eat(t_philo *philo)
 		philo->full = true;
 		pthread_mutex_unlock(&philo->philo_lock);
 	}
-	pthread_mutex_unlock(philo->left_fork); // TRY WITH THIS ABOVE THE IF.
+	pthread_mutex_unlock(philo->left_fork);
 	pthread_mutex_unlock(philo->right_fork);
 	return (0);
 }
