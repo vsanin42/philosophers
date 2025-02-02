@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:04 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 21:56:14 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 15:21:13 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ int	start_dinner(t_philo *philos, t_params *params)
 	i = 0;
 	if (params->philos_count == 1)
 		return (process_single(philos));
-	params->start_time = get_current_time(); // better be here and inited once
+	params->start_time = get_current_time();
 	while (i < params->philos_count)
 	{
 		params->pids[i] = fork();
@@ -63,12 +63,10 @@ int	start_dinner(t_philo *philos, t_params *params)
 			process_routine(&philos[i], philos);
 		i++;
 	}
-	// while (i-- > 0)
-	// 	sem_post(params->sem_start);
 	return (0);
 }
 
-// waits for all philos to eat enough times.
+// waits` for all philos to eat enough times.
 // once everyone has eaten, signal termination to everyone.
 // dying philosophers also post to sem_full to make sure this function exits.
 int	wait_for_full(t_params *params)

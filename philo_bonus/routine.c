@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 15:18:48 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 22:49:29 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 14:14:35 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,6 @@ int	process_single(t_philo *philo)
 		sem_close(philo->sem_philo);
 		exit(0);
 	}
-	if (waitpid(philo->params->pids[0], &status, 0) == -1)
-		return (error_msg("Error: failed in waitpid."), ERROR);
 	return (0);
 }
 
@@ -72,8 +70,8 @@ int	process_eat(t_philo *philo)
 		sem_post(philo->sem_philo);
 		sem_post(philo->params->sem_full);
 	}
-	sem_post(philo->params->sem_forks); // bit earlier post on forks
-	sem_post(philo->params->sem_forks); // MOVED THIS BACK DOWN. TEST AGAIN.
+	sem_post(philo->params->sem_forks);
+	sem_post(philo->params->sem_forks);
 	return (0);
 }
 
@@ -121,7 +119,6 @@ void	process_offset(t_philo *philo)
 // 3. repeat eat-sleep-think cycle until anyone's starvation or own fullness.
 void	process_routine(t_philo *philo, t_philo *philo_start)
 {
-	//sem_wait(philo->params->sem_start);
 	create_philo_threads(philo);
 	process_offset(philo);
 	while (is_dinner_over(philo->params) == false)

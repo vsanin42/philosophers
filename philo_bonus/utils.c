@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 16:33:19 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 18:09:46 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 14:15:27 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ int	safe_printf(t_philo *philo, t_state state)
 	long	stamp;
 
 	sem_wait(philo->params->sem_printf);
-	if (is_dinner_over(philo->params) == true) // 2nd cond was state != DIED
+	if (is_dinner_over(philo->params) == true)
 		return (sem_post(philo->params->sem_printf), -1);
 	stamp = get_timestamp(philo->params->start_time);
 	if (state == EAT && !is_dinner_over(philo->params))

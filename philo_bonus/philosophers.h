@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philosophers.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:48:27 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 18:20:20 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 14:45:46 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ typedef struct s_params
 	pid_t			*pids;
 	sem_t			*sem_forks;
 	sem_t			*sem_printf;
-	sem_t			*sem_start;
 	sem_t			*sem_global;
 	sem_t			*sem_shutdown;
 	sem_t			*sem_full;

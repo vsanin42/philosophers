@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   inits.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 17:24:53 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 22:09:29 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 14:09:49 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,11 @@ int	init_semaphores(t_params *params)
 	i = params->philos_count;
 	params->sem_forks = sem_open("/forks", O_CREAT | O_EXCL, 0666, i);
 	params->sem_printf = sem_open("/printf", O_CREAT | O_EXCL, 0666, 1);
-	params->sem_start = sem_open("/start", O_CREAT | O_EXCL, 0666, 0); // test with/without. if worse then delete
 	params->sem_global = sem_open("/global", O_CREAT | O_EXCL, 0666, 1);
 	params->sem_shutdown = sem_open("/shutdown", O_CREAT | O_EXCL, 0666, 0);
 	params->sem_full = sem_open("/full", O_CREAT | O_EXCL, 0666, 0);
 	if (params->sem_forks == SEM_FAILED || params->sem_printf == SEM_FAILED
-		|| params->sem_start == SEM_FAILED || params->sem_global == SEM_FAILED
+		|| params->sem_global == SEM_FAILED
 		|| params->sem_shutdown == SEM_FAILED || params->sem_full == SEM_FAILED)
 	{
 		return (error_msg("Error: failed initializing a semaphore."), ERROR);

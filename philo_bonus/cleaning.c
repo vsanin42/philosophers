@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cleaning.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:17:43 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 18:27:48 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 14:07:33 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@ int	close_param_sems(t_params *params)
 		return (error_msg("Error: failed to close forks."), ERROR);
 	if (sem_close(params->sem_printf) == -1)
 		return (error_msg("Error: failed to close printf."), ERROR);
-	if (sem_close(params->sem_start) == -1)
-		return (error_msg("Error: failed to close start."), ERROR);
 	if (sem_close(params->sem_global) == -1)
 		return (error_msg("Error: failed to close global."), ERROR);
 	if (sem_close(params->sem_shutdown) == -1)
@@ -37,8 +35,6 @@ int	unlink_param_sems(void)
 		return (error_msg("Error: failed to unlink forks"), ERROR);
 	if (sem_unlink("/printf") == -1)
 		return (error_msg("Error: failed to unlink printf."), ERROR);
-	if (sem_unlink("/start") == -1)
-		return (error_msg("Error: failed to unlink start."), ERROR);
 	if (sem_unlink("/global") == -1)
 		return (error_msg("Error: failed to unlink global."), ERROR);
 	if (sem_unlink("/shutdown") == -1)
@@ -97,7 +93,6 @@ void	unlink_sems_at_launch(void)
 	i = 1;
 	sem_unlink("/forks");
 	sem_unlink("/printf");
-	sem_unlink("/start");
 	sem_unlink("/global");
 	sem_unlink("/shutdown");
 	sem_unlink("/full");

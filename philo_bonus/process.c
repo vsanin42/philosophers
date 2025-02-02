@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   process.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/31 13:54:35 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 22:02:54 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 15:04:09 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,14 @@ void	*monitor_self(void *arg)
 	t_philo	*philo;
 
 	philo = (t_philo *)arg;
-	while (is_dinner_over(philo->params) == false) // while 1 ?
+	while (is_dinner_over(philo->params) == false)
 	{
 		if (is_philo_full(philo) == true)
 			return (NULL);
 		if (is_philo_dead(philo) == true)
 		{
 			safe_printf(philo, DIED);
-			sem_wait(philo->params->sem_global); // move to post to shutdown?
+			sem_wait(philo->params->sem_global);
 			philo->params->dinner_over = true;
 			sem_post(philo->params->sem_global);
 		}
@@ -61,7 +61,6 @@ void	process_terminate(t_philo *philo, t_philo *philo_start)
 	i = -1;
 	pthread_join(philo->th_monitor_self, NULL);
 	pthread_join(philo->th_shutdown, NULL);
-	// unlink before closing? (wtf)
 	close_param_sems(philo->params);
 	while (++i < philo->params->philos_count)
 		sem_close(philo_start[i].sem_philo);

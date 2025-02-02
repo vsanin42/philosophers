@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   checks.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsanin <vsanin@student.42prague.com>       +#+  +:+       +#+        */
+/*   By: vsanin <vsanin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 17:53:38 by vsanin            #+#    #+#             */
-/*   Updated: 2025/02/01 18:07:07 by vsanin           ###   ########.fr       */
+/*   Updated: 2025/02/02 13:43:20 by vsanin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ bool	is_philo_dead(t_philo *philo)
 		return (false);
 	current_time = get_current_time();
 	sem_wait(philo->sem_philo);
-	if (((philo->last_meal > 0) // might need a value getter if this is too long
+	if (((philo->last_meal > 0)
 			&& (current_time - philo->last_meal > ttd))
 		|| ((philo->last_meal == 0)
 			&& (current_time - philo->params->start_time > ttd)))
